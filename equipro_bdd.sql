@@ -57,10 +57,8 @@ CREATE TABLE customers (
 
 -- Table de liaison entre le client et le professionnel
 CREATE TABLE customer_professionnal (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
     profesionnel_id UUID REFERENCES professionnels(id) ON DELETE CASCADE,
-    pro_id UUID REFERENCES professionnels(id) ON DELETE CASCADE,
     last_visit_date TIMESTAMP,
     next_visit_date TIMESTAMP,
     notes TEXT,
@@ -73,8 +71,8 @@ CREATE TABLE stables (
     name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
-    country VARCHAR(100) NOT NULL,
-    owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -121,11 +119,11 @@ CREATE TABLE horses (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table de liaison entre chevaux et propriétaires (Horse Owners)
-CREATE TABLE horse_owners (
+-- Table de liaison entre chevaux et propriétaires (Horse Users)
+CREATE TABLE horse_users (
     horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
-    owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (horse_id, owner_id)
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (horse_id, user_id)
 );
 
 -- Table des statuts d'événement (Event Status)
@@ -145,11 +143,8 @@ CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    event_date TIMESTAMP NOT NULL,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
     address TEXT NOT NULL,
     stable_id UUID REFERENCES stables(id) ON DELETE SET NULL,
     status_id UUID REFERENCES event_statuses(id) ON DELETE SET NULL,
@@ -198,23 +193,6 @@ CREATE TABLE other_observations (
     observation_name VARCHAR(255) UNIQUE NOT NULL
 );
 
--- Table des factures cheval (Invoice)
-CREATE TABLE invoices_Horse (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
-    horse_id UUID REFERENCES horses(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Table des factures client (Invoice)
-CREATE TABLE invoices_Horse (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
-    customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
 
 -- Table des factures (Invoice)
 CREATE TABLE invoices (
@@ -239,16 +217,15 @@ CREATE TABLE invoice_details (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_id UUID REFERENCES invoices(id) ON DELETE CASCADE,
     description TEXT,
-    amount DECIMAL(10,2),
-    external_observations_id UUID REFERENCES external_observations(id) ON DELETE SET NULL,
+    external_observations UUID[], 
+    incisive_observations UUID[], 
+    mucous_observations UUID[],  
+    internal_observations UUID[],
+    other_observations UUID[],  
     external_notes TEXT,
-    incisive_observations_id UUID REFERENCES incisive_observations(id) ON DELETE SET NULL,
     incisive_notes TEXT,
-    mucous_observations_id UUID REFERENCES mucous_observations(id) ON DELETE SET NULL,
     mucous_notes TEXT,
-    internal_observations_id UUID REFERENCES internal_observations(id) ON DELETE SET NULL,
     internal_notes TEXT,
-    other_observations_id UUID REFERENCES other_observations(id) ON DELETE SET NULL,
     other_notes TEXT,
     care_observation TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
@@ -256,5 +233,22 @@ CREATE TABLE invoice_details (
 );
 
 
+-- Table des factures cheval (Invoice Horse)
+CREATE TABLE invoices_Horse (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
+    horse_id UUID REFERENCES horses(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Table des factures client (Invoice Customer)
+CREATE TABLE invoices_Horse (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
+    customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
 
 
