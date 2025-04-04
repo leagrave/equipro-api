@@ -10,8 +10,9 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-app.use("/api/auth", loginRoute);
+app.use("/api", loginRoute);
 app.use("/api", signUpRoute);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

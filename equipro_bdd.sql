@@ -1,10 +1,10 @@
--- Table des rôles (Role) (admin/client/profesionnel)
+-- Table des rôles (Role) (admin/particulier/profesionnel)
 CREATE TABLE roles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     role_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- Table des rôles (Pro type) (dentiste/marechal/osteo/ecurie)
+-- Table des types de professions (Pro type) (dentiste/marechal/osteo/ecurie)
 CREATE TABLE professional_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     professional_type_name VARCHAR(50) UNIQUE NOT NULL
@@ -17,8 +17,8 @@ CREATE TABLE addresses (
     city VARCHAR(100) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,
     country VARCHAR(100) DEFAULT 'France',
-    longitude VARCHAR(13),
     latitude VARCHAR(12),
+    longitude VARCHAR(13),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -29,7 +29,7 @@ CREATE TABLE professionals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     siren_number VARCHAR(20) UNIQUE NOT NULL,
     societe_name VARCHAR(50),
     professional_types_id UUID REFERENCES professional_types(id) ON DELETE SET NULL,
@@ -56,7 +56,6 @@ CREATE TABLE customers (
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
     addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     is_societe BOOLEAN DEFAULT FALSE,
