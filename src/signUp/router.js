@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/signup", async (req, res) => {
     try {
-        const { first_name, last_name, email, password, role_name, phone, phone2, address, billing_address, societeName, sirenNumber, professionalType } = req.body;
+        const { first_name, last_name, email, password, role_name, phone, phone2, address, billing_address, societeName, siretNumber, professionalType } = req.body;
 
         // Vérification des champs
         if (!first_name || !last_name || !email || !password || !role_name) {
@@ -23,7 +23,7 @@ router.post("/signup", async (req, res) => {
 
         // Si le rôle est 'professionnel', créer un professionnel
         if (role_name === 'professionnel') {
-            await signUpProfessional(newUser.id, phone, phone2, societeName, address, sirenNumber, professionalType);
+            await signUpProfessional(newUser.id, phone, phone2, societeName, address, siretNumber, professionalType);
         }
 
         res.status(201).json({ message: "Utilisateur créé avec succès", user: newUser });

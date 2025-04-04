@@ -1,8 +1,13 @@
 const { neon } = require("@neondatabase/serverless");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
+const axios = require('axios');
+require("dotenv").config();
 
 const sql = neon(process.env.DATABASE_URL);
+
+const CLIENT_ID = process.env.INSEE_CLIENT_ID;
+const CLIENT_SECRET = process.env.INSEE_CLIENT_SECRET;
 
 const signUp = async (first_name, last_name, email, password, role_name) => {
     try {
@@ -90,7 +95,7 @@ const signUpCustomers = async (userId, phone, phone2, isSociete, address, billin
 
 
 // Fonction pour l'inscription du client
-const signUpProfessional = async (userId, phone, phone2, societeName, address, sirenNumber, professionalType) => {
+const signUpProfessional = async (userId, phone, phone2, societeName, address, siretNumber, professionalType) => {
     try {
 
         // Vérifier si l'utilisateur existe déjà dans la table des profesionnels
@@ -127,16 +132,117 @@ const signUpProfessional = async (userId, phone, phone2, societeName, address, s
 
         // Insérer un nouveau professionnel
         const newProfessional  = await sql`
-            INSERT INTO professionals (user_id, phone, phone2, address_id, siren_number, societe_name, professional_types_id)
-            VALUES (${userId}, ${phone}, ${phone2}, ${addressId}, ${sirenNumber}, ${societeName}, ${professionalTypeId})
+            INSERT INTO professionals (user_id, phone, phone2, address_id, siret_number, societe_name, professional_types_id)
+            VALUES (${userId}, ${phone}, ${phone2}, ${addressId}, ${siretNumber}, ${societeName}, ${professionalTypeId})
             RETURNING id, user_id;
         `;
 
+        // Après la création du professionnel, vérifier le SIRET de manière asynchrone
+        checkSiretAndUpdateVerification(newProfessional[0].id, siretNumber);
+
         return newProfessional[0];
     } catch (error) {
-        throw new Error("Erreur lors de la création du client : " + error.message);
+        throw new Error("Erreur lors de la création du professionel : " + error.message);
     }
 };
+
+
+const getInseeToken = async () => {
+    try {
+        const credentials = Buffer.from(`${process.env.INSEE_CLIENT_ID}:${process.env.INSEE_CLIENT_SECRET}`).toString("base64");
+
+        const response = await axios.post(
+            "https://api.insee.fr/token",
+            "grant_type=client_credentials",
+            {
+                headers: {
+                    Authorization: `Basic ${credentials}`,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
+        );
+
+        return response.data.access_token;
+    } catch (error) {
+        console.error("Erreur lors de l'obtention du token INSEE :", error.response ? error.response.data : error.message);
+        throw new Error("Impossible d'obtenir le token INSEE");
+    }
+};
+
+
+// Test token INSEE
+// getInseeToken()
+//     .then(token => console.log("Token INSEE obtenu :", token))
+//     .catch(err => console.error(err.message));
+
+// Fonction pour vérifier le SIRET via l'API de l'INSEE
+const verifySiretWithExternalService = async (siret) => {
+    try {
+        // Récupérer le token d'authentification
+        const token = await getInseeToken();
+
+        // URL pour la recherche SIRET
+        const url = `https://api.insee.fr/entreprises/sirene/V3.11/siret/${siret}`;
+
+        // Effectuer la requête GET
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json"
+            }
+        });
+
+        // Vérifier si l'établissement existe et est actif
+        if (response.data.etablissement) {
+            const etablissement = response.data.etablissement;
+            const isActive = etablissement.periodesEtablissement?.[0]?.etatAdministratifEtablissement === "A"; // "A" = Actif
+
+            return {
+                isValid: isActive,
+                data: {
+                    siret: etablissement.siret,
+                    nom: etablissement.uniteLegale?.denominationUniteLegale || "Non disponible",
+                    adresse: [
+                        etablissement.adresseEtablissement?.numeroVoieEtablissement || "",
+                        etablissement.adresseEtablissement?.typeVoieEtablissement || "",
+                        etablissement.adresseEtablissement?.libelleVoieEtablissement || "",
+                        etablissement.adresseEtablissement?.codePostalEtablissement || "",
+                        etablissement.adresseEtablissement?.libelleCommuneEtablissement || ""
+                    ].filter(Boolean).join(" ") // Assemble l'adresse proprement
+                }
+            };
+        } else {
+            return { isValid: false, message: "SIRET non valide ou entreprise non trouvée" };
+        }
+    } catch (error) {
+        console.error("Erreur lors de la vérification du SIRET :", error.message);
+        return { isValid: false, message: "Erreur lors de la requête API INSEE" };
+    }
+};
+
+// Fonction pour vérifier le SIRET et mettre à jour l'état de vérification
+const checkSiretAndUpdateVerification = async (professionalId, siret) => {
+    try {
+        // Vérifier le SIRET via l'API de l'INSEE
+        const siretData = await verifySiretWithExternalService(siret);
+
+        // Mettre à jour is_verified dans la base de données
+        await sql`
+            UPDATE professionals
+            SET is_verified = ${siretData.isValid}
+            WHERE id = ${professionalId}
+        `;
+
+        console.log(
+            siretData.isValid
+                ? `Le SIRET ${siret} est valide et actif.`
+                : `Le SIRET ${siret} est invalide ou inactif.`
+        );
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du statut de vérification :", error.message);
+    }
+};
+
 
 
 

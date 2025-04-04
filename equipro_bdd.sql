@@ -30,7 +30,7 @@ CREATE TABLE professionals (
     phone VARCHAR(20),
     phone2 VARCHAR(20),
     address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
-    siren_number VARCHAR(20) UNIQUE NOT NULL,
+    siret_number VARCHAR(14) UNIQUE NOT NULL,
     societe_name VARCHAR(50),
     professional_types_id UUID REFERENCES professional_types(id) ON DELETE SET NULL,
     is_verified BOOLEAN DEFAULT FALSE,
