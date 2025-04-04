@@ -1,18 +1,17 @@
-
-const express = require('express');
-const cors = require('cors');
-const userRoutes = require('./routes/user_routes');
-const authRoutes = require('./routes/auth_routes');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const loginRoute = require("./login/router");
 
 const app = express();
 
-// Middlewares
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// Routes
-app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
+// Routes d'authentification
+app.use("/api/auth", loginRoute);
 
-module.exports = app;
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Serveur en écoute sur http://localhost:${PORT}`);
+});

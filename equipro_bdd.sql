@@ -4,20 +4,32 @@ CREATE TABLE roles (
     role_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- Table des rôles (Role) (dentiste/marechal/osteo/ecurie)
+-- Table des rôles (Pro type) (dentiste/marechal/osteo/ecurie)
 CREATE TABLE professional_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     professional_type_name VARCHAR(50) UNIQUE NOT NULL
 );
+
+-- Table des adresses (Adresses) (Addresses)
+CREATE TABLE addresses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    adresse TEXT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    country VARCHAR(100) DEFAULT 'France',
+    longitude VARCHAR(13),
+    latitude VARCHAR(12),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 
 -- Table des professionnels (Professional)
 CREATE TABLE professionals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    address TEXT,
-    city VARCHAR(100) NOT NULL,
-    postal_code VARCHAR(20) NOT NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     siren_number VARCHAR(20) UNIQUE NOT NULL,
     societe_name VARCHAR(50),
     professional_types_id UUID REFERENCES professional_types(id) ON DELETE SET NULL,
@@ -29,8 +41,10 @@ CREATE TABLE professionals (
 -- Table des utilisateurs (User)
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password TEXT,
+    password TEXT NOT NULL,
     role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
@@ -39,17 +53,12 @@ CREATE TABLE users (
 -- Table des clients (Client)
 CREATE TABLE customers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    users_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
     role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
-    address TEXT,
-    billing_address TEXT,
-    city VARCHAR(100) NOT NULL,
-    postal_code VARCHAR(20) NOT NULL,
-    civility VARCHAR(10) CHECK (civility IN ('M.', 'Mme', 'Mlle')),
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     is_societe BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
@@ -69,9 +78,7 @@ CREATE TABLE customer_professionnal (
 CREATE TABLE stables (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    address TEXT NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    postal_code VARCHAR(20) NOT NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
@@ -111,7 +118,7 @@ CREATE TABLE horses (
     feed_type_id UUID REFERENCES feed_types(id) ON DELETE SET NULL,
     color_id UUID REFERENCES horse_colors(id) ON DELETE SET NULL,
     activity_type_id UUID REFERENCES horse_activity_types(id) ON DELETE SET NULL,
-    address TEXT NOT NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     last_visit_date TIMESTAMP,
     next_visit_date TIMESTAMP,
     notes TEXT,
@@ -145,7 +152,7 @@ CREATE TABLE events (
     description TEXT,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
-    address TEXT NOT NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     stable_id UUID REFERENCES stables(id) ON DELETE SET NULL,
     status_id UUID REFERENCES event_statuses(id) ON DELETE SET NULL,
     states_id UUID REFERENCES event_states(id) ON DELETE SET NULL,
@@ -203,7 +210,7 @@ CREATE TABLE invoices (
     is_paid BOOLEAN DEFAULT FALSE,
     payment_type_id UUID REFERENCES payment_types(id) ON DELETE SET NULL,
     is_company BOOLEAN DEFAULT FALSE,
-    billing_address TEXT NOT NULL,
+    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     status_id UUID REFERENCES invoice_statuses(id) ON DELETE SET NULL,
     issue_date TIMESTAMP DEFAULT NOW(),
     next_visit INTEGER NOT NULL,
@@ -242,13 +249,5 @@ CREATE TABLE invoices_Horse (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table des factures client (Invoice Customer)
-CREATE TABLE invoices_Horse (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
-    customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
 
 
