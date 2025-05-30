@@ -21,15 +21,15 @@ const login = async (email, password) => {
         console.log(isMatch)
       throw new Error("Mot de passe incorrect");
     }
-
+    console.log(user.professional)
     // Générer le token JWT
     const token = jwt.sign(
-      { id: user.id, email: user.email, role_id: user.role_id },
+      { id: user.id, email: user.email, professional: user.professional},
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    return { token, user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email } };
+    return { token, user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email, professional: user.professional } };
   } catch (error) {
     throw new Error(error.message);
   }

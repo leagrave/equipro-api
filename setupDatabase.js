@@ -8,10 +8,6 @@ const client = new Client({
 
 // Liste des tables à créer
 const createTables = `
-CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    role_name VARCHAR(50) UNIQUE NOT NULL
-);
 
 
 CREATE TABLE professional_types (
@@ -40,9 +36,15 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT,
-    role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
+    professional BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_agenda (
+    owner_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    contact_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (owner_user_id, contact_user_id)
 );
 
 
@@ -53,7 +55,6 @@ CREATE TABLE customers (
     last_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
     address TEXT,
     billing_address TEXT,
     city VARCHAR(100) NOT NULL,

@@ -3,13 +3,14 @@ const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 const axios = require('axios');
 require("dotenv").config();
+const admin = require('../config/firebase');
 
 const sql = neon(process.env.DATABASE_URL);
 
 const CLIENT_ID = process.env.INSEE_CLIENT_ID;
 const CLIENT_SECRET = process.env.INSEE_CLIENT_SECRET;
 
-const signUp = async (first_name, last_name, email, password, role_name) => {
+const signUp = async (first_name, last_name, email, password, professional) => {
     try {
         // Vérifier si l'utilisateur existe déjà
         const userExists = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -17,26 +18,23 @@ const signUp = async (first_name, last_name, email, password, role_name) => {
             return { message: "L'utilisateur existe déjà" };
         }
 
-        // Récupérer l'ID du rôle (ou assigner un rôle par défaut)
-        let roleId;
-        const role = await sql`SELECT id FROM roles WHERE role_name = ${role_name}`;
-        
-        if (role.length > 0) {
-            roleId = role[0].id;
-        } else {
-            throw new Error("Le rôle spécifié n'existe pas");
-        }
-
         // Hasher le mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const uid = uuidv4()
+        const cleanUid = uid.replace(/-/g, '');
+
         // Insérer le nouvel utilisateur
         const newUser = await sql`
-            INSERT INTO users (id, first_name, last_name, email, password, role_id)
-            VALUES (${uuidv4()}, ${first_name}, ${last_name}, ${email}, ${hashedPassword}, ${roleId})
-            RETURNING id, first_name, last_name, email, role_id
+            INSERT INTO users (id, first_name, last_name, email, password, professional)
+            VALUES (${cleanUid}, ${first_name}, ${last_name}, ${email}, ${hashedPassword}, ${professional})
+            RETURNING id, first_name, last_name, email, professional
         `;
 
+        // crée le user dans firebase
+        syncUserWithFirebase(cleanUid,email,password,first_name,"")
+
+        
         return newUser[0];
     } catch (error) {
         throw new Error(error.message);
@@ -244,6 +242,53 @@ const checkSiretAndUpdateVerification = async (professionalId, siret) => {
 };
 
 
+// Fonction appelée après inscription côté PostgreSQL
+async function syncUserWithFirebase(uid, email, password, displayName, photoURL) {
 
+  try {
+    // 1. Créer un utilisateur Firebase Auth (si pas déjà présent)
+    const userData= {
+      uid,
+      email,
+      password,
+      displayName,
+    };
+
+    // Ajouter photoURL seulement si c'est une URL valide
+    if (photoURL && isValidUrl(photoURL)) {
+      userData.photoURL = photoURL;
+    }
+
+    const userRecord = await admin.auth().createUser(userData);
+
+    // 2. Ajouter ce user à Firestore pour la messagerie
+    await admin.firestore().collection('users').doc(uid).set({
+      uid,
+      email,
+      displayName,
+      photoURL: photoURL || "",
+      lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+      fcmToken: "", // à mettre à jour depuis Flutter
+    });
+
+    console.log("Utilisateur Firebase créé :", email);
+  } catch (error) {
+    if (error.code === 'auth/email-already-exists') {
+      console.log("Utilisateur déjà existant dans Firebase Auth");
+    } else {
+      console.error("Erreur lors de la création Firebase :", error);
+    }
+  }
+}
+
+// Fonction pour valider une URL
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 module.exports = { signUp, signUpCustomers, signUpProfessional };

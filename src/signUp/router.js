@@ -6,23 +6,23 @@ const router = express.Router();
 
 router.post("/signup", async (req, res) => {
     try {
-        const { first_name, last_name, email, password, role_name, phone, phone2, address, billing_address, societeName, siretNumber, professionalType } = req.body;
+        const { first_name, last_name, email, password, professional, phone, phone2, address, billing_address, societeName, siretNumber, professionalType } = req.body;
 
         // Vérification des champs
-        if (!first_name || !last_name || !email || !password || !role_name) {
+        if (!first_name || !last_name || !email || !password || !professional) {
             return res.status(400).json({ error: "Tous les champs sont requis" });
         }
 
         // Créer l'utilisateur
-        const newUser = await signUp(first_name, last_name, email, password, role_name);
+        const newUser = await signUp(first_name, last_name, email, password, professional);
 
         // Si le rôle est 'particulier', créer un client
-        if (role_name === 'particulier') {
+        if (professional === false) {
             await signUpCustomers(newUser.id, phone, phone2, req.body.isSociete, address, billing_address);
         }
 
         // Si le rôle est 'professionnel', créer un professionnel
-        if (role_name === 'professionnel') {
+        if (professional === true) {
             await signUpProfessional(newUser.id, phone, phone2, societeName, address, siretNumber, professionalType);
         }
 

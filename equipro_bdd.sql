@@ -1,8 +1,3 @@
--- Table des rôles (Role) (admin/particulier/profesionnel)
-CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    role_name VARCHAR(50) UNIQUE NOT NULL
-);
 
 -- Table des types de professions (Pro type) (dentiste/marechal/osteo/ecurie)
 CREATE TABLE professional_types (
@@ -45,10 +40,18 @@ CREATE TABLE users (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
+    professional BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Table de liaison entre le user et son agenda (liste de users)
+CREATE TABLE user_agenda (
+    owner_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    contact_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (owner_user_id, contact_user_id)
+);
+
 
 -- Table des clients (Client)
 CREATE TABLE customers (
