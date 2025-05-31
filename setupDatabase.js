@@ -257,6 +257,21 @@ CREATE TABLE invoices_Horse (
 );
 
 
+CREATE TABLE files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nom TEXT NOT NULL,
+  url_fichier TEXT NOT NULL,
+  mime_type TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE files_users (
+  file_id UUID REFERENCES files(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  PRIMARY KEY (file_id, user_id)
+);
+
+
 `;
 
 async function setupDatabase() {

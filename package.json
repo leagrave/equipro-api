@@ -12,7 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.821.0",
+    "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@neondatabase/serverless": "^1.0.0",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
@@ -22,7 +25,8 @@
     "express-openid-connect": "^2.18.0",
     "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.1",
+    "multer": "^2.0.0",
+    "pg": "^8.16.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
