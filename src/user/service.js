@@ -21,7 +21,7 @@ const User = {
     return result.rows;
   },
 
-  async updateUser(id, email, password, role_id) {
+  async updateUser(email, password, role_id, id) {
     let hashedPassword = password;
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10);

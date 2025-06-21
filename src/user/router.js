@@ -1,79 +1,65 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
+const User = require('./service'); 
 
-// Créer un nouvel utilisateur
-router.post('/', async (req, res) => {
+// GET /api/users - Récupérer tous les utilisateurs
+router.get('/users', async (req, res) => {
   try {
-    const { email, password, role_id } = req.body;
-    const result = await pool.query(
-      'INSERT INTO users (email, password, role_id) VALUES ($1, $2, $3) RETURNING *',
-      [email, password, role_id]
-    );
-    return res.status(201).json(result.rows[0]);
+    const users = await User.getAllUsers();
+    res.json(users);
   } catch (error) {
-    console.error('Erreur lors de la création de l\'utilisateur', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Erreur getAllUsers:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// Récupérer tous les utilisateurs
-router.get('/', async (req, res) => {
+// GET /api/users/:id - Récupérer un utilisateur par id
+router.get('/user/:id', async (req, res) => {
+  const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM users');
-    return res.json(result.rows);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des utilisateurs', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
-  }
-});
-
-// Récupérer un utilisateur par ID
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const user = await User.getUserById(id);
+    if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
-    return res.json(result.rows[0]);
+    res.json(user);
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'utilisateur', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Erreur getUserById:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// Mettre à jour un utilisateur
-router.put('/:id', async (req, res) => {
+
+// PUT /api/users/:id - Mettre à jour un utilisateur
+router.put('/user/:id', async (req, res) => {
+  const { id } = req.params;
+  const { email, password, role_id } = req.body;
+
+  if (!email || !role_id) {
+    return res.status(400).json({ error: 'Email et role_id sont requis' });
+  }
+
   try {
-    const { id } = req.params;
-    const { email, password, role_id } = req.body;
-    const result = await pool.query(
-      'UPDATE users SET email = $1, password = $2, role_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *',
-      [email, password, role_id, id]
-    );
-    if (result.rows.length === 0) {
+    const updatedUser = await User.updateUser(email, password, role_id, id);
+    if (!updatedUser) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
-    return res.json(result.rows[0]);
+    res.json(updatedUser);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'utilisateur', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Erreur updateUser:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// Supprimer un utilisateur
-router.delete('/:id', async (req, res) => {
+// DELETE /api/users/:id - Supprimer un utilisateur
+router.delete('/user/:id', async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    }
-    return res.json({ message: 'Utilisateur supprimé avec succès' });
+    const result = await User.deleteUser(id);
+    res.json(result);
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'utilisateur', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Erreur deleteUser:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

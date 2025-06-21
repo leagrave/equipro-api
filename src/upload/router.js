@@ -55,6 +55,7 @@ router.get('/files/user/:userId', async (req, res) => {
     const { userId } = req.params;
     const files = await getFilesForUser(userId);
     res.json(files);
+    console.log("test fonctionne")
   } catch (err) {
     console.error('Erreur récupération fichiers utilisateur :', err);
     res.status(500).json({ error: 'Erreur serveur' });

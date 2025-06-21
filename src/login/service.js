@@ -1,35 +1,40 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { neon } = require("@neondatabase/serverless");
+const pool = require('../config/db');
 
-const sql = neon(process.env.DATABASE_URL);
 
 const login = async (email, password) => {
   try {
-    // Vérifier si l'utilisateur existe
-    const result = await sql`SELECT * FROM users WHERE email = ${email}`;
-    if (result.length === 0) {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (result.rows.length === 0) {
       throw new Error("Utilisateur non trouvé");
     }
 
-    const user = result[0];
+    const user = result.rows[0];
 
-    // Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        console.log(isMatch)
       throw new Error("Mot de passe incorrect");
     }
-    console.log(user.professional)
-    // Générer le token JWT
+
     const token = jwt.sign(
-      { id: user.id, email: user.email, professional: user.professional},
+      { id: user.id, email: user.email, professional: user.professional },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    return { token, user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email, professional: user.professional } };
+    return {
+      token,
+      user: {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        professional: user.professional
+      }
+    };
   } catch (error) {
     throw new Error(error.message);
   }
