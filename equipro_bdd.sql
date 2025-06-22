@@ -8,6 +8,8 @@ CREATE TABLE professional_types (
 -- Table des adresses (Adresses) (Addresses)
 CREATE TABLE addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
     adresse TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,
@@ -22,9 +24,10 @@ CREATE TABLE addresses (
 -- Table des professionnels (Professional)
 CREATE TABLE professionals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     siret_number VARCHAR(14) UNIQUE NOT NULL,
     societe_name VARCHAR(50),
     professional_types_id UUID REFERENCES professional_types(id) ON DELETE SET NULL,
@@ -60,7 +63,7 @@ CREATE TABLE customers (
     phone VARCHAR(20),
     phone2 VARCHAR(20),
     addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
-    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    billing_addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     is_societe BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
@@ -212,7 +215,7 @@ CREATE TABLE invoices (
     is_paid BOOLEAN DEFAULT FALSE,
     payment_type_id UUID REFERENCES payment_types(id) ON DELETE SET NULL,
     is_company BOOLEAN DEFAULT FALSE,
-    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    billing_addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     status_id UUID REFERENCES invoice_statuses(id) ON DELETE SET NULL,
     issue_date TIMESTAMP DEFAULT NOW(),
     next_visit INTEGER NOT NULL,

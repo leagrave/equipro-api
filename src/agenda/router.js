@@ -13,6 +13,17 @@ router.get('/agenda/:userId', async (req, res) => {
     }
 });
 
+// Récupération des infos d’un utilisateur
+router.get('/agendaAll/:userId', async (req, res) => {
+    try {
+        const agenda = await agendaService.getAllAgenda(req.params.userId);
+        res.json(agenda);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur lors de la récupération de l’agenda' });
+    }
+});
+
 // Ajout d’un contact à l’agenda
 router.post('/agenda/:userId/:contactId', async (req, res) => {
     try {

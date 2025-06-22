@@ -9,6 +9,7 @@ const agendaRoute = require('./src/agenda/router');
 const customerRoute = require('./src/customer/router');
 const profesionnalRoute = require('./src/professional/router');
 const horseRoute = require('./src/horse/router');
+const adressesRoute = require('./src/adresse/router');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api", agendaRoute);
 app.use("/api", customerRoute);
 app.use("/api", profesionnalRoute);
 app.use("/api", horseRoute);
+app.use("/api", adressesRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

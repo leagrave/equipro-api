@@ -1,40 +1,33 @@
-const AWS = require('aws-sdk');
-const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
+const pool = require('../config/db');
 const {
   S3Client,
-  GetObjectCommand
+  PutObjectCommand,
+  GetObjectCommand,
 } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
-// AWS SDK v2 pour l'upload
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
-});
-
-// AWS SDK v3 pour la signature
+// Initialisation du client S3 (v3)
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  }
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-// ✅ Upload vers S3
+// ✅ Upload vers S3 avec AWS SDK v3
 async function uploadFileToS3(fileBuffer, fileName, mimeType) {
   const key = `${Date.now()}_${fileName}`;
 
-  const params = {
+  const command = new PutObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
     Body: fileBuffer,
     ContentType: mimeType,
-  };
+  });
 
-  await s3.upload(params).promise();
+  await s3Client.send(command);
 
   const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return { key, s3Url };
@@ -50,7 +43,6 @@ async function saveFileMetaToDb(originalName, s3Url, mimeType, userIds = []) {
     [fileId, originalName, s3Url, mimeType]
   );
 
-  // Association avec les utilisateurs
   for (const userId of userIds) {
     await pool.query(
       `INSERT INTO files_users (file_id, user_id)
@@ -62,19 +54,17 @@ async function saveFileMetaToDb(originalName, s3Url, mimeType, userIds = []) {
   return result.rows[0];
 }
 
-// Génération d’une URL signée à partir de la "key"
+// ✅ Génération d’une URL signée à partir de la "key"
 async function getSignedUrlFromKey(key, expiresIn = 3600) {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: key
+    Key: key,
   });
 
-  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
-  return signedUrl;
+  return await getSignedUrl(s3Client, command, { expiresIn });
 }
 
-
-// Récupérer les fichiers associés à un utilisateur
+// ✅ Récupérer les fichiers associés à un utilisateur
 async function getFilesForUser(userId) {
   const result = await pool.query(
     `SELECT f.*, 
@@ -94,7 +84,7 @@ async function getFilesForUser(userId) {
         mime_type: file.mime_type,
         created_at: file.created_at,
         signedUrl,
-        key: file.key
+        key: file.key,
       };
     })
   );
@@ -102,11 +92,9 @@ async function getFilesForUser(userId) {
   return filesWithSignedUrls;
 }
 
-
-
 module.exports = {
   uploadFileToS3,
   saveFileMetaToDb,
   getSignedUrlFromKey,
-  getFilesForUser   
+  getFilesForUser,
 };
