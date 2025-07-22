@@ -2,12 +2,12 @@ const pool = require('../config/db');
 
 const Horse = {
   // 1. Créer une adresse
-  async createAddress(adresse, city, postal_code, country = 'France', latitude = null, longitude = null) {
+  async createAddress(address, city, postal_code, country = 'France', latitude = null, longitude = null) {
     const result = await pool.query(
-      `INSERT INTO addresses (adresse, city, postal_code, country, latitude, longitude)
+      `INSERT INTO addresses (address, city, postal_code, country, latitude, longitude)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [adresse, city, postal_code, country, latitude, longitude]
+      [address, city, postal_code, country, latitude, longitude]
     );
     return result.rows[0].id;
   },
@@ -15,7 +15,7 @@ const Horse = {
   // 2. Créer un cheval avec adresse et lien user
   async createHorseWithAddressAndUser(horseData, addressData, userId) {
     const address_id = await this.createAddress(
-      addressData.adresse,
+      addressData.address,
       addressData.city,
       addressData.postal_code,
       addressData.country || 'France',
@@ -26,7 +26,7 @@ const Horse = {
     const result = await pool.query(
       `INSERT INTO horses (
         name, age, breed_id, stable_id, feed_type_id, color_id, activity_type_id,
-        addresse_id, last_visit_date, next_visit_date, notes
+        address_id, last_visit_date, next_visit_date, notes
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       RETURNING *`,
       [

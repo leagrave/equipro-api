@@ -2,9 +2,9 @@
 
 const { Pool } = require('pg');
 
-// Assure-toi que DATABASE_URL est correctement définie dans ton environnement
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Utilise la variable d'environnement
+  connectionString: process.env.DATABASE_URL, 
   ssl: {
     rejectUnauthorized: false // nécessaire pour les connexions sécurisées sur Render
   }

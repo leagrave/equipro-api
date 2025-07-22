@@ -11,12 +11,17 @@ const Professional = {
     return result.rows[0];
   },
 
-    async createAddress(adresse, city, postal_code, country = 'France', latitude = null, longitude = null) {
+  async getAllProfessionalsTypes() {
+    const result = await pool.query(`SELECT * FROM professional_types`);
+    return result.rows;
+  },
+
+    async createAddress(address, city, postal_code, country = 'France', latitude = null, longitude = null) {
     const result = await pool.query(
-      `INSERT INTO addresses (adresse, city, postal_code, country, latitude, longitude)
+      `INSERT INTO addresses (address, city, postal_code, country, latitude, longitude)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [adresse, city, postal_code, country, latitude, longitude]
+      [address, city, postal_code, country, latitude, longitude]
     );
     return result.rows[0].id;
   },
@@ -27,7 +32,7 @@ const Professional = {
 
     // 1. Créer l'adresse et récupérer son id
     const address_id = await this.createAddress(
-      addressData.adresse,
+      addressData.address,
       addressData.city,
       addressData.postal_code,
       addressData.country || 'France',

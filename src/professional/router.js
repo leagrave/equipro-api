@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Professional = require('./service');
 
-// GET /api/professionals - Tous les professionnels
+// Tous les professionnels
 router.get('/professionals', async (req, res) => {
   try {
     const professionals = await Professional.getAllProfessionals();
@@ -13,7 +13,7 @@ router.get('/professionals', async (req, res) => {
   }
 });
 
-// GET /api/professionals/:id - Professionnel par ID
+// Professionnel par ID
 router.get('/professional/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -28,7 +28,21 @@ router.get('/professional/:id', async (req, res) => {
   }
 });
 
-// POST /api/professionals - Créer un professionnel
+// Professionnel type
+router.get('/professionalType', async (req, res) => {
+  try {
+    const professional = await Professional.getAllProfessionalsTypes();
+    if (!professional) {
+      return res.status(404).json({ error: 'Professionnel non trouvé' });
+    }
+    res.json(professional);
+  } catch (error) {
+    console.error('Erreur de récupération des types de professions:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Créer un professionnel
 router.post('/professional', async (req, res) => {
   const { phone, phone2, siret_number, societe_name, professional_types_id, is_verified, address } = req.body;
 
@@ -36,8 +50,8 @@ router.post('/professional', async (req, res) => {
     return res.status(400).json({ error: 'Le numéro SIRET est obligatoire' });
   }
 
-    if (!address || !address.adresse || !address.city || !address.postal_code) {
-    return res.status(400).json({ error: 'L\'adresse complète est obligatoire (adresse, city, postal_code)' });
+    if (!address || !address.address || !address.city || !address.postal_code) {
+    return res.status(400).json({ error: 'L\'adresse complète est obligatoire (address, city, postal_code)' });
   }
 
   try {
@@ -52,7 +66,7 @@ router.post('/professional', async (req, res) => {
   }
 });
 
-// PUT /api/professionals/:id - Mettre à jour un professionnel
+// Mettre à jour un professionnel
 router.put('/professional/:id', async (req, res) => {
   const { id } = req.params;
   const { phone, phone2, address_id, siret_number, societe_name, professional_types_id, is_verified } = req.body;
@@ -73,7 +87,7 @@ router.put('/professional/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/professionals/:id - Supprimer un professionnel
+// Supprimer un professionnel
 router.delete('/professional/:id', async (req, res) => {
   const { id } = req.params;
   try {

@@ -5,7 +5,7 @@ const AddressService = {
     const {
       user_id,
       horse_id = null,
-      adresse,
+      address,
       city,
       postal_code,
       country = 'France',
@@ -15,20 +15,20 @@ const AddressService = {
 
     const query = `
       INSERT INTO addresses (
-        user_id, horse_id, adresse, city, postal_code, country, latitude, longitude
+        user_id, horse_id, address, city, postal_code, country, latitude, longitude
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
 
-    const values = [user_id, horse_id, adresse, city, postal_code, country, latitude, longitude];
+    const values = [user_id, horse_id, address, city, postal_code, country, latitude, longitude];
     const result = await db.query(query, values);
     return result.rows[0];
   },
 
   async updateAddress(id, data) {
     const {
-      adresse,
+      address,
       city,
       postal_code,
       country,
@@ -38,7 +38,7 @@ const AddressService = {
 
     const query = `
       UPDATE addresses
-      SET adresse = $1,
+      SET address = $1,
           city = $2,
           postal_code = $3,
           country = $4,
@@ -49,7 +49,7 @@ const AddressService = {
       RETURNING *;
     `;
 
-    const values = [adresse, city, postal_code, country, latitude, longitude, id];
+    const values = [address, city, postal_code, country, latitude, longitude, id];
     const result = await db.query(query, values);
     return result.rows[0];
   },

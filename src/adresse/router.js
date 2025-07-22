@@ -41,6 +41,11 @@ router.delete('/adresse/:id', async (req, res) => {
 router.get('/adresses/user/:userId', async (req, res) => {
   try {
     const addresses = await AddressService.getAddressesByUser(req.params.userId);
+    
+    if (!addresses || addresses.length === 0) {
+      return res.status(404).json({ error: "Aucune adresse trouvée pour cet utilisateur." });
+    }
+
     res.json(addresses);
   } catch (error) {
     console.error(error);

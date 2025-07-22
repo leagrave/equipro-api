@@ -40,7 +40,7 @@ const signUp = async (first_name, last_name, email, password, professional) => {
 };
 
 // Fonction pour l'inscription du client
-const signUpCustomers = async (userId, phone, phone2, isSociete, address, billing_address) => {
+const signUpCustomers = async (userId, phone, phone2, isSociete, addresse, billing_addresse) => {
     try {
 
         // Vérifier si l'utilisateur existe déjà dans la table des clients
@@ -57,20 +57,20 @@ const signUpCustomers = async (userId, phone, phone2, isSociete, address, billin
         let addressIdBilling = null;
 
         // Vérifier si l'adresse est fournie, sinon ne pas l'inclure dans la requête
-        if (Array.isArray(address) && address.length > 0) {
+        if (Array.isArray(addresse) && addresse.length > 0) {
             const newAddress = await pool.query(`
-                INSERT INTO addresses (adress, city, postal_code, country)
-                VALUES (${address[0].adress}, ${address[0].city}, ${address[0].postal_code}, ${address[0].country || 'France'})
+                INSERT INTO addresses (address, city, postal_code, country)
+                VALUES (${addresse[0].address}, ${addresse[0].city}, ${addresse[0].postal_code}, ${addresse[0].country || 'France'})
                 RETURNING id;
             `);
             addressId = newAddress[0].id;
         }
 
         // Vérifier si l'adresse de facturation est fournie, sinon ne pas l'inclure dans la requête
-        if (Array.isArray(billing_address) && billing_address.length > 0) {
+        if (Array.isArray(billing_addresse) && billing_addresse.length > 0) {
             const newAddressBilling = await pool.query(`
-                INSERT INTO addresses (adress, city, postal_code, country)
-                VALUES (${billing_address[0].adress}, ${billing_address[0].city}, ${billing_address[0].postal_code}, ${billing_address[0].country || 'France'})
+                INSERT INTO addresses (address, city, postal_code, country)
+                VALUES (${billing_addresse[0].address}, ${billing_addresse[0].city}, ${billing_addresse[0].postal_code}, ${billing_addresse[0].country || 'France'})
                 RETURNING id;
             `);
             addressIdBilling = newAddressBilling[0].id;
@@ -91,7 +91,7 @@ const signUpCustomers = async (userId, phone, phone2, isSociete, address, billin
 
 
 // Fonction pour l'inscription du client
-const signUpProfessional = async (userId, phone, phone2, societeName, address, siretNumber, professionalType) => {
+const signUpProfessional = async (userId, phone, phone2, societeName, addresse, siretNumber, professionalType) => {
     try {
 
         // Vérifier si l'utilisateur existe déjà dans la table des profesionnels
@@ -116,10 +116,10 @@ const signUpProfessional = async (userId, phone, phone2, societeName, address, s
 
         // Vérifier si l'adresse est fournie, sinon ne pas l'inclure dans la requête
         let addressId = null;
-        if (Array.isArray(address) && address.length > 0) {
+        if (Array.isArray(addresse) && addresse.length > 0) {
             const newAddress = await pool.query(`
-                INSERT INTO addresses (adress, city, postal_code, country)
-                VALUES (${address[0].adress}, ${address[0].city}, ${address[0].postal_code}, ${address[0].country || 'France'})
+                INSERT INTO addresses (address, city, postal_code, country)
+                VALUES (${addresse[0].address}, ${addresse[0].city}, ${addresse[0].postal_code}, ${addresse[0].country || 'France'})
                 RETURNING id;
             `);
             addressId = newAddress[0].id;
@@ -198,7 +198,7 @@ const verifySiretWithExternalService = async (siret) => {
                 data: {
                     siret: etablissement.siret,
                     nom: etablissement.uniteLegale?.denominationUniteLegale || "Non disponible",
-                    adresse: [
+                    address: [
                         etablissement.adresseEtablissement?.numeroVoieEtablissement || "",
                         etablissement.adresseEtablissement?.typeVoieEtablissement || "",
                         etablissement.adresseEtablissement?.libelleVoieEtablissement || "",

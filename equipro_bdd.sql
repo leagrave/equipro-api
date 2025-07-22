@@ -10,12 +10,13 @@ CREATE TABLE addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
-    adresse TEXT NOT NULL,
+    address TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,
     country VARCHAR(100) DEFAULT 'France',
     latitude VARCHAR(12),
     longitude VARCHAR(13),
+    type VARCHAR(20),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -27,7 +28,7 @@ CREATE TABLE professionals (
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     siret_number VARCHAR(14) UNIQUE NOT NULL,
     societe_name VARCHAR(50),
     professional_types_id UUID REFERENCES professional_types(id) ON DELETE SET NULL,
@@ -40,7 +41,7 @@ CREATE TABLE professionals (
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100),
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     professional BOOLEAN DEFAULT FALSE,
@@ -62,28 +63,40 @@ CREATE TABLE customers (
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     phone VARCHAR(20),
     phone2 VARCHAR(20),
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
-    billing_addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     is_societe BOOLEAN DEFAULT FALSE,
+    societe_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Table de liaison entre le client et le professionnel
 CREATE TABLE customer_professionnal (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
-    profesionnel_id UUID REFERENCES professionnels(id) ON DELETE CASCADE,
+    professionals_id UUID REFERENCES professionals(id) ON DELETE CASCADE,
     last_visit_date TIMESTAMP,
     next_visit_date TIMESTAMP,
-    notes TEXT,
-    PRIMARY KEY (customer_id, profesionnel_id)
+    notes TEXT
 );
+
+-- Table de notes de liaison entre le client et le professionnel
+CREATE TABLE customerProfessionnal_note (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    professionals_id UUID REFERENCES professionals(id) ON DELETE CASCADE,
+    notes TEXT
+);
+
 
 -- Table des écuries (Stable)
 CREATE TABLE stables (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    phone VARCHAR(20),
+    phone2 VARCHAR(20),
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
@@ -123,7 +136,7 @@ CREATE TABLE horses (
     feed_type_id UUID REFERENCES feed_types(id) ON DELETE SET NULL,
     color_id UUID REFERENCES horse_colors(id) ON DELETE SET NULL,
     activity_type_id UUID REFERENCES horse_activity_types(id) ON DELETE SET NULL,
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     last_visit_date TIMESTAMP,
     next_visit_date TIMESTAMP,
     notes TEXT,
@@ -157,7 +170,7 @@ CREATE TABLE events (
     description TEXT,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
-    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     stable_id UUID REFERENCES stables(id) ON DELETE SET NULL,
     status_id UUID REFERENCES event_statuses(id) ON DELETE SET NULL,
     states_id UUID REFERENCES event_states(id) ON DELETE SET NULL,
@@ -215,7 +228,7 @@ CREATE TABLE invoices (
     is_paid BOOLEAN DEFAULT FALSE,
     payment_type_id UUID REFERENCES payment_types(id) ON DELETE SET NULL,
     is_company BOOLEAN DEFAULT FALSE,
-    billing_addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     status_id UUID REFERENCES invoice_statuses(id) ON DELETE SET NULL,
     issue_date TIMESTAMP DEFAULT NOW(),
     next_visit INTEGER NOT NULL,

@@ -1,4 +1,4 @@
-// Router : router.js
+
 const express = require("express");
 const { signUp, signUpCustomers, signUpProfessional } = require("../signUp/service");
 

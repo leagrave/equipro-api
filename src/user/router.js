@@ -2,6 +2,24 @@ const express = require('express');
 const router = express.Router();
 const User = require('./service'); 
 
+// GET /api/users - Crée  un utilisateur
+router.post('/userCreate', async (req, res) => {
+  const { email, password, first_name, last_name, professional } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email et mot de passe requis' });
+  }
+
+  try {
+    const user = await User.createUser(email, password, first_name, last_name, professional);
+    res.status(201).json(user);
+  } catch (error) {
+    console.error('Erreur lors de la création de l utilisateur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+
 // GET /api/users - Récupérer tous les utilisateurs
 router.get('/users', async (req, res) => {
   try {
@@ -12,6 +30,22 @@ router.get('/users', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
+// GET /api/users/:id - Récupérer un utilisateur par id
+router.get('/user/pro/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.getUserProById(id);
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Erreur getUserById:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 
 // GET /api/users/:id - Récupérer un utilisateur par id
 router.get('/user/:id', async (req, res) => {
@@ -27,6 +61,7 @@ router.get('/user/:id', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
 
 
 // PUT /api/users/:id - Mettre à jour un utilisateur
@@ -50,6 +85,24 @@ router.put('/user/:id', async (req, res) => {
   }
 });
 
+
+
+// PUT /user/all/:id
+router.put('/user/all/:id', async (req, res) => {
+  const userId = req.params.id;
+  const data = req.body;
+
+  try {
+    await User.updateUserAndRole(userId, data);
+    res.status(200).json({ message: 'Utilisateur mis à jour avec succès' });
+  } catch (error) {
+    console.error('Erreur PUT /user/all/:id :', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de l’utilisateur' });
+  }
+});
+
+
+
 // DELETE /api/users/:id - Supprimer un utilisateur
 router.delete('/user/:id', async (req, res) => {
   const { id } = req.params;
@@ -62,5 +115,23 @@ router.delete('/user/:id', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
+// verif email
+router.get('/user/email/checkEmail', async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email requis' });
+  }
+
+  try {
+    const exists = await User.checkEmailExists(email);
+    return res.status(200).json({ exists });
+  } catch (error) {
+    console.error('Erreur vérif email :', error);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 
 module.exports = router;
