@@ -12,6 +12,7 @@ const horseRoute = require('./src/horse/router');
 const adressesRoute = require('./src/adresse/router');
 const soinsRoute = require('./src/soins/router');
 const notesRoute = require('./src/notes/router');
+const ecuriesRoute = require('./src/ecurie/router');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api", horseRoute);
 app.use("/api", adressesRoute);
 app.use("/api", soinsRoute);
 app.use("/api", notesRoute);
+app.use("/api", ecuriesRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

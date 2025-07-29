@@ -124,7 +124,8 @@ async function getAllAgenda(userId) {
         AND u.id IN (
             SELECT contact_user_id FROM user_agenda WHERE owner_user_id = $1
         )
-        ORDER BY u.id, h.name
+        ORDER BY u.last_name ASC, u.first_name ASC
+
 
 
     `, [userId]);
@@ -176,7 +177,7 @@ async function getAllAgenda(userId) {
             id: row.address_id,
             type: 'main',
             address: row.address,
-            postalCode: row.postal_code,
+            postal_Code: row.postal_code,
             city: row.city,
             country: row.country,
             longitude: row.longitude,

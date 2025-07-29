@@ -13,6 +13,24 @@ router.post('/adresse', async (req, res) => {
   }
 });
 
+
+// Créer des adresses
+router.post('/adresses', async (req, res) => {
+  const { address, city, postal_code, country , latitude, longitude, user_id, horse_id, type } = req.body;
+
+  if (!address || !city || !postal_code || !user_id) {
+    return res.status(400).json({ error: 'L\'adresse principale est obligatoire (address, city, postal_code)' });
+  }
+
+  try {
+    const addresses = await AddressService.createAddress(address, city, postal_code, country , latitude, longitude, user_id, horse_id, type);
+    res.status(201).json(addresses);
+  } catch (error) {
+    console.error('Erreur lors de la création des adresses:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Modifier une adresse existante
 router.put('/adresse/:id', async (req, res) => {
   try {
@@ -52,6 +70,23 @@ router.get('/adresses/user/:userId', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la récupération des adresses' });
   }
 });
+
+// Obtenir l'adresses d’un utilisateur
+router.get('/address/:id', async (req, res) => {
+
+  try {
+    const address = await AddressService.getAddressesByAddressId(req.params.id);
+    if (!address) {
+      return res.status(404).json({ message: "Adresse non trouvée" });
+    }
+    console.log(address)
+    res.json(address);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des adresses' });
+  }
+});
+
 
 // Obtenir toutes les adresses d’un cheval
 router.get('/adresse/horse/:horseId', async (req, res) => {

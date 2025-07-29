@@ -90,6 +90,14 @@ CREATE TABLE customerProfessionnal_note (
 );
 
 
+-- Table de liaison entre le user et ses/son ecurie (liste d ecuries)
+CREATE TABLE user_stable (
+    owner_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    stable_id UUID NOT NULL REFERENCES stables(id) ON DELETE CASCADE,
+    PRIMARY KEY (owner_user_id, stable_id)
+);
+
+
 -- Table des écuries (Stable)
 CREATE TABLE stables (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -108,11 +116,25 @@ CREATE TABLE feed_types (
     feed_name VARCHAR(100) UNIQUE NOT NULL
 );
 
+CREATE TABLE horse_feed_types (
+    horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
+    feed_type_id UUID REFERENCES feed_types(id) ON DELETE CASCADE,
+    PRIMARY KEY (horse_id, feed_type_id)
+);
+
+
 -- Table des couleurs de chevaux (Horse Color)
 CREATE TABLE horse_colors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     color_name VARCHAR(100) UNIQUE NOT NULL
 );
+
+CREATE TABLE horse_colors_link (
+    horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
+    color_id UUID REFERENCES horse_colors(id) ON DELETE CASCADE,
+    PRIMARY KEY (horse_id, color_id)
+);
+
 
 -- Table des types d'activité des chevaux (Horse Activity Type)
 CREATE TABLE horse_activity_types (
@@ -120,23 +142,33 @@ CREATE TABLE horse_activity_types (
     activity_name VARCHAR(100) UNIQUE NOT NULL
 );
 
+CREATE TABLE horse_activity_types_link (
+    horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
+    activity_type_id UUID REFERENCES horse_activity_types(id) ON DELETE CASCADE,
+    PRIMARY KEY (horse_id, activity_type_id)
+);
+
+
 -- Table des races de chevaux (Horse Breed)
 CREATE TABLE horse_breeds (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     breed_name VARCHAR(100) UNIQUE NOT NULL
 );
 
+CREATE TABLE horse_breeds_link (
+    horse_id UUID REFERENCES horses(id) ON DELETE CASCADE,
+    breed_id UUID REFERENCES horse_breeds(id) ON DELETE CASCADE,
+    PRIMARY KEY (horse_id, breed_id)
+);
+
+
 -- Table des chevaux (Horse)
 CREATE TABLE horses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
-    age INTEGER NOT NULL,
-    breed_id UUID REFERENCES horse_breeds(id) ON DELETE SET NULL,
+    age INTEGER,
     stable_id UUID REFERENCES stables(id) ON DELETE SET NULL,
-    feed_type_id UUID REFERENCES feed_types(id) ON DELETE SET NULL,
-    color_id UUID REFERENCES horse_colors(id) ON DELETE SET NULL,
-    activity_type_id UUID REFERENCES horse_activity_types(id) ON DELETE SET NULL,
-    address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    addresse_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     last_visit_date TIMESTAMP,
     next_visit_date TIMESTAMP,
     notes TEXT,

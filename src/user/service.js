@@ -136,7 +136,7 @@ const User = {
             id: row.address_id,
             address: row.address,
             city: row.city,
-            postalCode: row.postal_code,
+            postal_Code: row.postal_code,
             country: row.country,
             latitude: row.latitude,
             longitude: row.longitude,
