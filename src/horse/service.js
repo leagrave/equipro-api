@@ -206,13 +206,13 @@ async getFullHorseById(horseId) {
     };
   },
 
-  // 4. Récupérer un cheval par son ID
+  // Récupérer un cheval par son ID
   async getHorseById(horseId) {
     const result = await pool.query(`SELECT * FROM horses WHERE id = $1`, [horseId]);
     return result.rows[0];
   },
 
-  // 5. Récupérer tous les chevaux d’un user
+  // Récupérer tous les chevaux d’un user
   async getHorsesByUserId(userId) {
     const result = await pool.query(`
       SELECT h.*
@@ -222,6 +222,22 @@ async getFullHorseById(horseId) {
     `, [userId]);
     return result.rows;
   },
+
+  // Récupérer tous les chevaux de la liste de users
+  async getHorsesByUsersId(userIds) {
+    if (Array.isArray(userIds) && userIds.length > 0) {
+      const result = await pool.query(`
+        SELECT DISTINCT h.*
+        FROM horses h
+        JOIN horse_users hu ON h.id = hu.horse_id
+        WHERE hu.user_id = ANY($1::uuid[])
+      `, [userIds]);
+      return result.rows;
+    } else {
+      return [];
+    }
+  },
+
 
   async putHorsesByHorseId(horseId,name,age,stable_id,address_id,last_visit_date,next_visit_date,notes,breed_ids,color_ids,feed_type_ids,activity_type_ids ) {
     const client = await pool.connect();

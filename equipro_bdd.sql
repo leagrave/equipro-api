@@ -251,42 +251,98 @@ CREATE TABLE other_observations (
 );
 
 
+CREATE TABLE intervention_external_observations (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    observation_id UUID REFERENCES external_observations(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, observation_id)
+);
+
+CREATE TABLE intervention_incisive_observations (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    observation_id UUID REFERENCES incisive_observations(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, observation_id)
+);
+
+CREATE TABLE intervention_mucous_observations (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    observation_id UUID REFERENCES mucous_observations(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, observation_id)
+);
+
+CREATE TABLE intervention_internal_observations (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    observation_id UUID REFERENCES internal_observations(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, observation_id)
+);
+
+CREATE TABLE intervention_other_observations (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    observation_id UUID REFERENCES other_observations(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, observation_id)
+);
+
+
+
 -- Table des factures (Invoice)
 CREATE TABLE invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     horse_id UUID REFERENCES horses(id) ON DELETE SET NULL,
+    professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL, 
+    title TEXT,
     total_amount DECIMAL(10,2) NOT NULL,
+
+    issue_date TIMESTAMP DEFAULT NOW(),
+
+    due_date TIMESTAMP NOT NULL,
     is_paid BOOLEAN DEFAULT FALSE,
-    payment_type_id UUID REFERENCES payment_types(id) ON DELETE SET NULL,
     is_company BOOLEAN DEFAULT FALSE,
+
+    payment_type_id UUID REFERENCES payment_types(id) ON DELETE SET NULL,
     billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
     status_id UUID REFERENCES invoice_statuses(id) ON DELETE SET NULL,
-    issue_date TIMESTAMP DEFAULT NOW(),
-    next_visit INTEGER NOT NULL,
-    due_date TIMESTAMP NOT NULL,
+
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table des détails de facture (Invoice Details)
-CREATE TABLE invoice_details (
+
+-- Table des détails d'intervetion (Details)
+CREATE TABLE interventions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    invoice_id UUID REFERENCES invoices(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    horse_id UUID REFERENCES horses(id) ON DELETE SET NULL,
+    pro_id UUID REFERENCES professionals(id) ON DELETE SET NULL,
     description TEXT,
-    external_observations UUID[], 
-    incisive_observations UUID[], 
-    mucous_observations UUID[],  
-    internal_observations UUID[],
-    other_observations UUID[],  
+
     external_notes TEXT,
     incisive_notes TEXT,
     mucous_notes TEXT,
     internal_notes TEXT,
     other_notes TEXT,
+
     care_observation TEXT,
+
+    intervention_date TIMESTAMP DEFAULT NOW(),
+
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Table de users intervention
+CREATE TABLE intervention_users (
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (intervention_id, user_id)
+);
+
+
+-- Table de facture intervention
+CREATE TABLE invoice_interventions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_id UUID REFERENCES invoices(id) ON DELETE CASCADE,
+    intervention_id UUID REFERENCES interventions(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 

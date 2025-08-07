@@ -77,6 +77,19 @@ router.get('/horses/user/:user_id', async (req, res) => {
   }
 });
 
+//  GET /api/horses/:user_id
+router.post('/horses/users', async (req, res) => {
+    const { userIds } = req.body;
+    console.log(userIds)
+  try {
+    const horses = await Horse.getHorsesByUsersId(userIds);
+    console.log(horses)
+    res.json(horses);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 //  PUT /api/horse/:horse_id
 router.put('/horse/:id', async (req, res) => {
     const horseId = req.params.id;
