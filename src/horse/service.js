@@ -106,7 +106,7 @@ const Horse = {
 
   async getHorseByIdTest() {
   const result = await pool.query(`SELECT hb.* FROM horse_breeds_link hbl JOIN horse_breeds hb ON hbl.breed_id = hb.id WHERE hbl.horse_id = $1`,['dd2157a5-c20b-4966-93d1-ae09d0c1ffe7'])
-  console.log(result.rows[0])
+
   return result.rows[0];
   },
 

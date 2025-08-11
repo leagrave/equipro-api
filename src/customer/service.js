@@ -18,8 +18,6 @@ const Customer = {
     // customerData = { user_id, phone, phone2, is_societe }
     // mainAddressData = { adresse, city, postal_code, country?, latitude?, longitude? }
     // billingAddressData = { adresse, city, postal_code, country?, latitude?, longitude? }
-    console.log(mainAddressData)
-    console.log(billingAddressData)
 
     let address_id = null;
     let billing_address_id = null;

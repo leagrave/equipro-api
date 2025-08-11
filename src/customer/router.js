@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('./service'); 
+const middlewares = require('../middlewares');
 
 // GET /api/customers - Récupérer tous les clients
 router.get('/customers', async (req, res) => {
@@ -29,10 +30,9 @@ router.get('/customer/:user_id', async (req, res) => {
 });
 
 // Créer un client
-router.post('/customer', async (req, res) => {
+router.post('/customer',middlewares.authMiddleware, async (req, res) => {
   const { owner_id, user_id ,phone, phone2, is_societe, societe_name, notes, mainAddress, billingAddress } = req.body;
    //mainAddress & billingAddress = { adresse, city, postal_code, country, latitude, longitude, type};
-   console.log(owner_id, user_id ,phone, phone2, is_societe, societe_name, notes, mainAddress, billingAddress)
 
   if (!user_id) {
     return res.status(400).json({ error: 'L\'identifiant utilisateur est obligatoire' });

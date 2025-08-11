@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Professional = require('./service');
+const middlewares = require('../middlewares');
 
 // Tous les professionnels
-router.get('/professionals', async (req, res) => {
+router.get('/professionals',middlewares.authMiddleware, async (req, res) => {
   try {
     const professionals = await Professional.getAllProfessionals();
     res.json(professionals);
@@ -14,7 +15,7 @@ router.get('/professionals', async (req, res) => {
 });
 
 // Professionnel par ID
-router.get('/professional/:id', async (req, res) => {
+router.get('/professional/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   try {
     const professional = await Professional.getProfessionalById(id);
@@ -29,7 +30,7 @@ router.get('/professional/:id', async (req, res) => {
 });
 
 // Professionnel type
-router.get('/professionalType', async (req, res) => {
+router.get('/professionalType',middlewares.authMiddleware, async (req, res) => {
   try {
     const professional = await Professional.getAllProfessionalsTypes();
     if (!professional) {
@@ -43,7 +44,7 @@ router.get('/professionalType', async (req, res) => {
 });
 
 // Créer un professionnel
-router.post('/professional', async (req, res) => {
+router.post('/professional',middlewares.authMiddleware, async (req, res) => {
   const { phone, phone2, siret_number, societe_name, professional_types_id, is_verified, address } = req.body;
 
   if (!siret_number) {
@@ -67,7 +68,7 @@ router.post('/professional', async (req, res) => {
 });
 
 // Mettre à jour un professionnel
-router.put('/professional/:id', async (req, res) => {
+router.put('/professional/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { phone, phone2, address_id, siret_number, societe_name, professional_types_id, is_verified } = req.body;
 
@@ -88,7 +89,7 @@ router.put('/professional/:id', async (req, res) => {
 });
 
 // Supprimer un professionnel
-router.delete('/professional/:id', async (req, res) => {
+router.delete('/professional/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   try {
     const result = await Professional.deleteProfessional(id);

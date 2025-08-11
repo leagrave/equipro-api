@@ -53,8 +53,6 @@ const AddressService = {
 
     async createAdresses(mainAddressData, billingAddressData) {
 
-    console.log(mainAddressData + "ici")
-    console.log(billingAddressData + "ici2")
 
     let address_id = null;
     let billing_address_id = null;

@@ -2,11 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const Notes = require('./service');
+const middlewares = require('../middlewares');
 
 // Créer une note
-router.post('/note', async (req, res) => {
+router.post('/note',middlewares.authMiddleware, async (req, res) => {
   const { customer_id, professionals_id, notes } = req.body;
-  console.log(customer_id, professionals_id, notes )
 
   try {
     const note = await Notes.upsertNote({ customer_id, professionals_id, notes });
@@ -35,7 +35,7 @@ router.post('/note', async (req, res) => {
 // });
 
 // Récupérer une note par customer_id et professionals_id
-router.get('/note/by-user/:customerId/:proId', async (req, res) => {
+router.get('/note/by-user/:customerId/:proId',middlewares.authMiddleware, async (req, res) => {
   const { customerId, proId } = req.params;
 
   try {
@@ -52,7 +52,7 @@ router.get('/note/by-user/:customerId/:proId', async (req, res) => {
 });
 
 // Récupérer une note par ID
-router.get('/note/by-id/:id', async (req, res) => {
+router.get('/note/by-id/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -69,7 +69,7 @@ router.get('/note/by-id/:id', async (req, res) => {
 });
 
 // Modifier une note
-router.put('/note/:id', async (req, res) => {
+router.put('/note/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { notes } = req.body;
 
@@ -86,7 +86,7 @@ router.put('/note/:id', async (req, res) => {
 });
 
 // Supprimer une note
-router.delete('/note/:id', async (req, res) => {
+router.delete('/note/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {

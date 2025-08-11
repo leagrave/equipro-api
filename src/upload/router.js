@@ -1,12 +1,13 @@
 const express = require('express');
 const multer = require('multer');
+const middlewares = require('../middlewares');
 const upload = multer({ storage: multer.memoryStorage() });
 
 const { uploadFileToS3, saveFileMetaToDb, getSignedUrlFromKey, getFilesForUser  } = require('./service');
 
 const router = express.Router();
 
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', upload.single('file'),middlewares.authMiddleware, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
 
@@ -38,7 +39,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
 
 
-router.get('/download/:key', async (req, res) => {
+router.get('/download/:key',middlewares.authMiddleware, async (req, res) => {
   try {
     const signedUrl = await getSignedUrlFromKey(req.params.key);
     res.json({ url: signedUrl });
@@ -50,7 +51,7 @@ router.get('/download/:key', async (req, res) => {
 
 
 
-router.get('/files/user/:userId', async (req, res) => {
+router.get('/files/user/:userId',middlewares.authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
     const files = await getFilesForUser(userId);

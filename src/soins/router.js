@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Soins = require('./service'); 
+const middlewares = require('../middlewares');
+
 
 // Pro → infos d’un client
-router.get('/pro/:professionalId/customer/:customerId', async (req, res) => {
+router.get('/pro/:professionalId/customer/:customerId',middlewares.authMiddleware, async (req, res) => {
   const { professionalId, customerId } = req.params;
   try {
     const data = await Soins.getCustomerVisitByProfessional(professionalId, customerId);
@@ -19,7 +21,7 @@ router.get('/pro/:professionalId/customer/:customerId', async (req, res) => {
 });
 
 // Pro → infos dernier rendez-vous d’un client
-router.get('/lastVisit/pro/:professionalId/customer/:customerId', async (req, res) => {
+router.get('/lastVisit/pro/:professionalId/customer/:customerId',middlewares.authMiddleware, async (req, res) => {
   const { professionalId, customerId } = req.params;
 
   try {
@@ -35,7 +37,7 @@ router.get('/lastVisit/pro/:professionalId/customer/:customerId', async (req, re
 });
 
 // Pro → historique de tous ses clients
-router.get('/pro/:professionalId/history', async (req, res) => {
+router.get('/pro/:professionalId/history',middlewares.authMiddleware, async (req, res) => {
   const { professionalId } = req.params;
   try {
     const data = await Soins.getAllCustomerVisitsByProfessional(professionalId);
@@ -49,7 +51,7 @@ router.get('/pro/:professionalId/history', async (req, res) => {
 });
 
 // Client → infos sur les pros + dates
-router.get('/customer/:customerId/professionals', async (req, res) => {
+router.get('/customer/:customerId/professionals',middlewares.authMiddleware, async (req, res) => {
   const { customerId } = req.params;
   try {
     const data = await Soins.getProfessionalInfoByCustomer(customerId);
@@ -63,7 +65,7 @@ router.get('/customer/:customerId/professionals', async (req, res) => {
 });
 
 // Client → dernier rdv tous pros confondus
-router.get('/customer/:customerId/last-visit', async (req, res) => {
+router.get('/customer/:customerId/last-visit',middlewares.authMiddleware, async (req, res) => {
   const { customerId } = req.params;
   try {
     const data = await Soins.getLastVisitByCustomer(customerId);

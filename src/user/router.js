@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('./service'); 
+const middlewares = require('../middlewares');
 
 // GET /api/users - Crée  un utilisateur
-router.post('/userCreate', async (req, res) => {
+router.post('/userCreate',middlewares.authMiddleware, async (req, res) => {
   const { email, password, first_name, last_name, professional } = req.body;
 
   if (!email || !password) {
@@ -21,7 +22,7 @@ router.post('/userCreate', async (req, res) => {
 
 
 // GET /api/users - Récupérer tous les utilisateurs
-router.get('/users', async (req, res) => {
+router.get('/users',middlewares.authMiddleware, async (req, res) => {
   try {
     const users = await User.getAllUsers();
     res.json(users);
@@ -32,10 +33,16 @@ router.get('/users', async (req, res) => {
 });
 
 // GET /api/users/:id - Récupérer un utilisateur par id
-router.get('/user/pro/:id', async (req, res) => {
-  const { id } = req.params;
+router.get('/user/pro/:id', middlewares.authMiddleware, async (req, res) => {
+  const requestedUserId = req.params.id;
+  const authUserId = req.user.id;
+
+  if (authUserId !== requestedUserId) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+
   try {
-    const user = await User.getUserProById(id);
+    const user = await User.getUserProById(requestedUserId);
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
@@ -46,9 +53,8 @@ router.get('/user/pro/:id', async (req, res) => {
   }
 });
 
-
 // GET /api/users/:id - Récupérer un utilisateur par id
-router.get('/user/:id', async (req, res) => {
+router.get('/user/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.getUserById(id);
@@ -65,7 +71,7 @@ router.get('/user/:id', async (req, res) => {
 
 
 // PUT /api/users/:id - Mettre à jour un utilisateur
-router.put('/user/:id', async (req, res) => {
+router.put('/user/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { email, password, role_id } = req.body;
 
@@ -88,7 +94,7 @@ router.put('/user/:id', async (req, res) => {
 
 
 // PUT /user/all/:id
-router.put('/user/all/:id', async (req, res) => {
+router.put('/user/all/:id',middlewares.authMiddleware, async (req, res) => {
   const userId = req.params.id;
   const data = req.body;
 
@@ -104,7 +110,7 @@ router.put('/user/all/:id', async (req, res) => {
 
 
 // DELETE /api/users/:id - Supprimer un utilisateur
-router.delete('/user/:id', async (req, res) => {
+router.delete('/user/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -117,7 +123,7 @@ router.delete('/user/:id', async (req, res) => {
 });
 
 // verif email
-router.get('/user/email/checkEmail', async (req, res) => {
+router.get('/user/email/checkEmail',middlewares.authMiddleware, async (req, res) => {
   const { email } = req.query;
 
   if (!email) {

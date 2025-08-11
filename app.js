@@ -50,6 +50,21 @@ app.use("/api", notesRoute);
 app.use("/api", ecuriesRoute);
 app.use("/api", interventionRoute);
 
+// app.use("/api/login", loginRoute);
+// app.use("/api/signUp", signUpRoute);
+// app.use("/api/user", userRoute);
+// app.use("/api/upload", uploadRoute);
+// app.use("/api/agenda", agendaRoute);
+// app.use("/api/customer", customerRoute);
+// app.use("/api/professional", profesionnalRoute);
+// app.use("/api/horse", horseRoute);
+// app.use("/api/adresse", adressesRoute);
+// app.use("/api/soins", soinsRoute);
+// app.use("/api/notes", notesRoute);
+// app.use("/api/ecurie", ecuriesRoute);
+// app.use("/api/intervention", interventionRoute);
+
+
 app.get("/debug-sentry", function mainHandler(req, res) {
   throw new Error("My first Sentry error!");
 });

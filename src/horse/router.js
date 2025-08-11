@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Horse = require('./service');
+const middlewares = require('../middlewares');
 
 //  POST /api/horse
-router.post('/horse', async (req, res) => {
+router.post('/horse',middlewares.authMiddleware, async (req, res) => {
   const { users, horse, address } = req.body;
-  console.log(users, horse, address)
+
 
   if (!users || !horse ) {
     return res.status(400).json({ error: 'un propriétaire et des infos sur le cheval sont requis' });
@@ -21,7 +22,7 @@ router.post('/horse', async (req, res) => {
 });
 
 //  GET /api/horses/:id
-router.get('/horse/by-id/:id', async (req, res) => {
+router.get('/horse/by-id/:id',middlewares.authMiddleware, async (req, res) => {
 
   try {
     const horse = await Horse.getFullHorseById(req.params.id);
@@ -34,7 +35,7 @@ router.get('/horse/by-id/:id', async (req, res) => {
 
 
 //  GET /api/horses
-router.get('/horses', async (req, res) => {
+router.get('/horses',middlewares.authMiddleware, async (req, res) => {
   try {
     const horses = await Horse.getAllHorses();
     res.json(horses);
@@ -44,7 +45,7 @@ router.get('/horses', async (req, res) => {
 });
 
 //  GET /api/infosHorse
-router.get('/infosHorse', async (req, res) => {
+router.get('/infosHorse',middlewares.authMiddleware, async (req, res) => {
   try {
     const horses = await Horse.getAllInfosHorses();
     res.json(horses);
@@ -68,7 +69,7 @@ router.get('/horse/test', async (req, res) => {
 
 
 //  GET /api/horses/:user_id
-router.get('/horses/user/:user_id', async (req, res) => {
+router.get('/horses/user/:user_id',middlewares.authMiddleware, async (req, res) => {
   try {
     const horses = await Horse.getHorsesByUserId(req.params.user_id);
     res.json(horses);
@@ -78,12 +79,12 @@ router.get('/horses/user/:user_id', async (req, res) => {
 });
 
 //  GET /api/horses/:user_id
-router.post('/horses/users', async (req, res) => {
+router.post('/horses/users',middlewares.authMiddleware, async (req, res) => {
     const { userIds } = req.body;
-    console.log(userIds)
+
   try {
     const horses = await Horse.getHorsesByUsersId(userIds);
-    console.log(horses)
+ 
     res.json(horses);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
@@ -91,7 +92,7 @@ router.post('/horses/users', async (req, res) => {
 });
 
 //  PUT /api/horse/:horse_id
-router.put('/horse/:id', async (req, res) => {
+router.put('/horse/:id',middlewares.authMiddleware, async (req, res) => {
     const horseId = req.params.id;
     const {
       name,
@@ -130,7 +131,7 @@ router.put('/horse/:id', async (req, res) => {
 
 
 // Mise à jour du stable_id d'un cheval
-router.put('/horse/:id/stable', async (req, res) => {
+router.put('/horse/:id/stable',middlewares.authMiddleware, async (req, res) => {
   const horseId = req.params.id;
   const { stableId } = req.body;
 
@@ -150,7 +151,7 @@ router.put('/horse/:id/stable', async (req, res) => {
 });
 
 // Mise à jour du stable_id d'un cheval
-router.put('/horse/:id/notes', async (req, res) => {
+router.put('/horse/:id/notes',middlewares.authMiddleware, async (req, res) => {
   const horseId = req.params.id;
   const { notes } = req.body;
 
@@ -170,7 +171,7 @@ router.put('/horse/:id/notes', async (req, res) => {
 });
 
 
-router.put('/horse/:id/users', async (req, res) => {
+router.put('/horse/:id/users',middlewares.authMiddleware, async (req, res) => {
   const horseId = req.params.id;
   const { userIds } = req.body; 
 
@@ -191,7 +192,7 @@ router.put('/horse/:id/users', async (req, res) => {
 
 
 // DELETE /api/horses/:id
-router.delete('/horse/:id', async (req, res) => {
+router.delete('/horse/:id',middlewares.authMiddleware, async (req, res) => {
   try {
     await Horse.deleteHorse(req.params.id);
     res.json({ message: 'Cheval supprimé' });

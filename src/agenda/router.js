@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const agendaService = require('../agenda/service');
+const middlewares = require('../middlewares');
 
 // Récupération de l’agenda d’un utilisateur
-router.get('/agenda/:userId', async (req, res) => {
+router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {
     try {
         const agenda = await agendaService.getAgenda(req.params.userId);
         res.json(agenda);
@@ -14,8 +15,11 @@ router.get('/agenda/:userId', async (req, res) => {
 });
 
 // Récupération des infos d’un utilisateur
-router.get('/agendaAll/:userId', async (req, res) => {
+router.get('/agendaAll/:userId',middlewares.authMiddleware, async (req, res) => {
     try {
+    if (req.user.id !== req.params.userId) {
+      return res.status(403).json({ error: "Accès refusé pour cet utilisateur" });
+    }
         const agenda = await agendaService.getAllAgenda(req.params.userId);
         res.json(agenda);
     } catch (err) {
@@ -25,7 +29,7 @@ router.get('/agendaAll/:userId', async (req, res) => {
 });
 
 // Ajout d’un contact à l’agenda
-router.post('/agenda/:userId/:contactId', async (req, res) => {
+router.post('/agenda/:userId/:contactId',middlewares.authMiddleware, async (req, res) => {
     try {
         const added = await agendaService.addContactToAgenda(req.params.userId, req.params.contactId);
         res.status(201).json(added);
@@ -36,7 +40,7 @@ router.post('/agenda/:userId/:contactId', async (req, res) => {
 });
 
 // Suppression d’un contact de l’agenda
-router.delete('/agenda/:userId/:contactId', async (req, res) => {
+router.delete('/agenda/:userId/:contactId',middlewares.authMiddleware, async (req, res) => {
     try {
         const result = await agendaService.removeContactFromAgenda(req.params.userId, req.params.contactId);
         res.json(result);

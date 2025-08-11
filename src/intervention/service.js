@@ -2,86 +2,115 @@ const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 
 const Intervention = {
-    async createIntervention(data) {
-        const {
-            user_id,
-            horse_id,
-            pro_id,
-            description,
-            external_notes,
-            incisive_notes,
-            mucous_notes,
-            internal_notes,
-            other_notes,
-            care_observation,
-            intervention_date,
-            external_observations = [],
-            incisive_observations = [],
-            mucous_observations = [],
-            internal_observations = [],
-            other_observations = [],
-        } = data;
+  async createIntervention(data) {
+      const {
+          users = [], 
+          horse_id,
+          pro_id,
+          description,
+          external_notes,
+          incisive_notes,
+          mucous_notes,
+          internal_notes,
+          other_notes,
+          care_observation,
+          intervention_date,
+          external_observations = [],
+          incisive_observations = [],
+          mucous_observations = [],
+          internal_observations = [],
+          other_observations = [],
+      } = data;
 
-        const id = uuidv4();
-        const interventionDate = intervention_date || new Date();
+ 
+      const interventionDate = intervention_date || new Date();
 
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
+      const client = await pool.connect();
+      try {
+          await client.query('BEGIN');
 
-            await client.query(
-                `INSERT INTO interventions (
-                    id, user_id, horse_id, pro_id,
-                    description, external_notes, incisive_notes,
-                    mucous_notes, internal_notes, other_notes,
-                    care_observation, intervention_date
-                ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7,
-                    $8, $9, $10, $11, $12
-                )`,
-                [
-                    id, user_id, horse_id, pro_id,
-                    description, external_notes, incisive_notes,
-                    mucous_notes, internal_notes, other_notes,
-                    care_observation, interventionDate
-                ]
-            );
+          const result = await client.query(
+            `INSERT INTO interventions (
+                horse_id, pro_id,
+                description, external_notes, incisive_notes,
+                mucous_notes, internal_notes, other_notes,
+                care_observation, intervention_date
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6,
+                $7, $8, $9, $10
+            )
+            RETURNING id`, 
+            [
+                horse_id, pro_id,
+                description, external_notes, incisive_notes,
+                mucous_notes, internal_notes, other_notes,
+                care_observation, interventionDate
+            ]
+        );
 
-            const insertObservations = async (table, observations) => {
-                const validTables = [
-                    'intervention_external_observations',
-                    'intervention_incisive_observations',
-                    'intervention_mucous_observations',
-                    'intervention_internal_observations',
-                    'intervention_other_observations'
-                ];
-                if (!validTables.includes(table)) {
-                    throw new Error(`Invalid observation table: ${table}`);
-                }
+        const id = result.rows[0].id; 
 
-                for (const obsId of observations) {
-                    await client.query(
-                        `INSERT INTO ${table} (intervention_id, observation_id) VALUES ($1, $2)`,
-                        [id, obsId]
-                    );
-                }
-            };
 
-            await insertObservations('intervention_external_observations', external_observations);
-            await insertObservations('intervention_incisive_observations', incisive_observations);
-            await insertObservations('intervention_mucous_observations', mucous_observations);
-            await insertObservations('intervention_internal_observations', internal_observations);
-            await insertObservations('intervention_other_observations', other_observations);
+          for (const userId of users) {
+              if (userId && userId.trim() !== '') {
+                  await client.query(
+                      `INSERT INTO intervention_users (intervention_id, user_id) VALUES ($1, $2)`,
+                      [id, userId]
+                  );
+              }
+          }
+          // Insert observations dans les tables dédiées
+          const insertObservations = async (table, observations) => {
+              const validTables = [
+                  'intervention_external_observations',
+                  'intervention_incisive_observations',
+                  'intervention_mucous_observations',
+                  'intervention_internal_observations',
+                  'intervention_other_observations'
+              ];
+              if (!validTables.includes(table)) {
+                  throw new Error(`Invalid observation table: ${table}`);
+              }
 
-            await client.query('COMMIT');
-            return { id };
-        } catch (err) {
-            await client.query('ROLLBACK');
-            throw err;
-        } finally {
-            client.release();
-        }
-    },
+              for (const obsId of observations) {
+                  await client.query(
+                      `INSERT INTO ${table} (intervention_id, observation_id) VALUES ($1, $2)`,
+                      [id, obsId]
+                  );
+              }
+          };
+
+          await insertObservations('intervention_external_observations', external_observations);
+          await insertObservations('intervention_incisive_observations', incisive_observations);
+          await insertObservations('intervention_mucous_observations', mucous_observations);
+          await insertObservations('intervention_internal_observations', internal_observations);
+          await insertObservations('intervention_other_observations', other_observations);
+
+          await client.query('COMMIT');
+          return { id };
+      } catch (err) {
+          await client.query('ROLLBACK');
+          throw err;
+      } finally {
+          client.release();
+      }
+  },
+
+async getInterventionsInfos() {
+  const res = await pool.query(
+    `
+      SELECT json_build_object(
+        'external_observations', (SELECT json_agg(json_build_object('id', id, 'observation_name', observation_name)) FROM external_observations),
+        'incisive_observations', (SELECT json_agg(json_build_object('id', id, 'observation_name', observation_name)) FROM incisive_observations),
+        'mucous_observations', (SELECT json_agg(json_build_object('id', id, 'observation_name', observation_name)) FROM mucous_observations),
+        'internal_observations', (SELECT json_agg(json_build_object('id', id, 'observation_name', observation_name)) FROM internal_observations),
+        'other_observations', (SELECT json_agg(json_build_object('id', id, 'observation_name', observation_name)) FROM other_observations)
+      ) AS data;
+    `
+  );
+
+  return res.rows[0];
+},
 
 
 async getInterventionByUserId(userId) {
@@ -289,33 +318,39 @@ async getInterventionByHorseId (horseId) {
 async getByUserId(userId) {
     const res = await pool.query(
         `SELECT 
-            i.*,
-            h.name AS horse,
-            json_agg(
-                json_build_object(
-                    'id', u.id,
-                    'first_name', u.first_name,
-                    'last_name', u.last_name
-                )
-            ) AS users,
+          i.id,
+          i.intervention_date,
+          i.description,
+          json_build_object(
+            'id', h.id,
+            'name', h.name
+          ) AS horse,
+          json_agg(
             json_build_object(
-                'id', p.id,
-                'first_name', p.first_name,
-                'last_name', p.last_name
-            ) AS professional
-        FROM interventions i
-        JOIN intervention_users iu ON iu.intervention_id = i.id
-        JOIN users u ON u.id = iu.user_id
+              'id', u.id,
+              'first_name', u.first_name,
+              'last_name', u.last_name,
+              'email', u.email,
+              'professional', u.professional
+            )
+          ) AS users
+        FROM intervention_users iu
+        JOIN interventions i ON i.id = iu.intervention_id
         JOIN horses h ON h.id = i.horse_id
-        JOIN users p ON p.id = i.pro_id
+        JOIN intervention_users iu2 ON iu2.intervention_id = i.id
+        JOIN users u ON u.id = iu2.user_id
         WHERE iu.user_id = $1
-        GROUP BY i.id, h.name, p.id
-        ORDER BY i.intervention_date DESC;`,
+        GROUP BY i.id, h.id, h.name
+        ORDER BY i.intervention_date DESC;
+
+      `,
         [userId]
     );
-    //console.log(res.rows);
+
     return res.rows;
 },
+
+
 
 
 async getByHorseId(horseId) {
@@ -345,18 +380,27 @@ async getByHorseId(horseId) {
         ORDER BY i.intervention_date DESC;`,
         [horseId]
     );
-    //console.log(res.rows)
     return res.rows;
 },
 
 
-    async getByProId(proId) {
-        const res = await pool.query(
-            `SELECT * FROM interventions WHERE pro_id = $1 ORDER BY intervention_date DESC`,
-            [proId]
-        );
-        return res.rows;
-    },
+async getByProId(proId) {
+    const res = await pool.query(
+        `SELECT 
+            i.id,
+            i.intervention_date,
+            i.description,
+            i.status,
+            h.name AS horse
+        FROM interventions i
+        JOIN horses h ON h.id = i.horse_id
+        WHERE i.pro_id = $1
+        ORDER BY i.intervention_date DESC;`,
+        [proId]
+    );
+    return res.rows;
+},
+
 
     async updateIntervention(id, data) {
         const {

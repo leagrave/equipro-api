@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const AddressService = require('./service');
+const middlewares = require('../middlewares');
 
 // Créer une nouvelle adresse
-router.post('/adresse', async (req, res) => {
+router.post('/adresse',middlewares.authMiddleware, async (req, res) => {
   try {
     const address = await AddressService.createAddress(req.body);
     res.status(201).json(address);
@@ -15,7 +16,7 @@ router.post('/adresse', async (req, res) => {
 
 
 // Créer des adresses
-router.post('/adresses', async (req, res) => {
+router.post('/adresses',middlewares.authMiddleware, async (req, res) => {
   const { address, city, postal_code, country , latitude, longitude, user_id, horse_id, type } = req.body;
 
   if (!address || !city || !postal_code || !user_id) {
@@ -32,7 +33,7 @@ router.post('/adresses', async (req, res) => {
 });
 
 // Modifier une adresse existante
-router.put('/adresse/:id', async (req, res) => {
+router.put('/adresse/:id',middlewares.authMiddleware, async (req, res) => {
   try {
     const address = await AddressService.updateAddress(req.params.id, req.body);
     if (!address) return res.status(404).json({ error: 'Adresse non trouvée' });
@@ -44,7 +45,7 @@ router.put('/adresse/:id', async (req, res) => {
 });
 
 // Supprimer une adresse
-router.delete('/adresse/:id', async (req, res) => {
+router.delete('/adresse/:id',middlewares.authMiddleware, async (req, res) => {
   try {
     const deleted = await AddressService.deleteAddress(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Adresse non trouvée' });
@@ -56,7 +57,7 @@ router.delete('/adresse/:id', async (req, res) => {
 });
 
 // Obtenir toutes les adresses d’un utilisateur
-router.get('/adresses/user/:userId', async (req, res) => {
+router.get('/adresses/user/:userId', middlewares.authMiddleware, async (req, res) => {
   try {
     const addresses = await AddressService.getAddressesByUser(req.params.userId);
     
@@ -72,14 +73,13 @@ router.get('/adresses/user/:userId', async (req, res) => {
 });
 
 // Obtenir l'adresses d’un utilisateur
-router.get('/address/:id', async (req, res) => {
+router.get('/address/:id',middlewares.authMiddleware,  async (req, res) => {
 
   try {
     const address = await AddressService.getAddressesByAddressId(req.params.id);
     if (!address) {
       return res.status(404).json({ message: "Adresse non trouvée" });
     }
-    console.log(address)
     res.json(address);
   } catch (error) {
     console.error(error);
@@ -89,7 +89,7 @@ router.get('/address/:id', async (req, res) => {
 
 
 // Obtenir toutes les adresses d’un cheval
-router.get('/adresse/horse/:horseId', async (req, res) => {
+router.get('/adresse/horse/:horseId',middlewares.authMiddleware, async (req, res) => {
   try {
     const addresses = await AddressService.getAddressesByHorse(req.params.horseId);
     res.json(addresses);

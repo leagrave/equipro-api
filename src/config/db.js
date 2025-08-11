@@ -7,7 +7,9 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL, 
   ssl: {
     rejectUnauthorized: false // nécessaire pour les connexions sécurisées sur Render
-  }
+  },
+  //idleTimeoutMillis: 10000, // 10 secondes (tu peux adapter)
+  connectionTimeoutMillis: 2000,
 });
 
 pool.connect()

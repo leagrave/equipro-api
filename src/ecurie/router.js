@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const stableService = require('./service');
+const middlewares = require('../middlewares');
 
 // POST /stables/by-owner
-router.post('/stable', async (req, res) => {
+router.post('/stable',middlewares.authMiddleware, async (req, res) => {
 
   try {
     const stables = await stableService.postStables(req.body);
@@ -15,7 +16,7 @@ router.post('/stable', async (req, res) => {
 });
 
 // POST /stables/by-owner ajout d'une ecurie + dans la liste d un pro 
-router.post('/stables/by-owner/:user_id', async (req, res) => {
+router.post('/stables/by-owner/:user_id',middlewares.authMiddleware, async (req, res) => {
   const { user_id } = req.params;
 
   if (!user_id) {
@@ -32,7 +33,7 @@ router.post('/stables/by-owner/:user_id', async (req, res) => {
 });
 
 // POST ajout une ecurie dans la liste d un pro 
-router.post('/stables/:user_id', async (req, res) => {
+router.post('/stables/:user_id',middlewares.authMiddleware, async (req, res) => {
   const { owner_user_id } = req.body;
   const { user_id } = req.params;
 
@@ -50,7 +51,7 @@ router.post('/stables/:user_id', async (req, res) => {
 });
 
 // GET /stables/:id
-router.get('/stables/:id', async (req, res) => {
+router.get('/stables/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -66,7 +67,7 @@ router.get('/stables/:id', async (req, res) => {
 });
 
 // GET /stables/owner/:owner_user_id
-router.get('/stables/owner/:owner_user_id', async (req, res) => {
+router.get('/stables/owner/:owner_user_id',middlewares.authMiddleware, async (req, res) => {
   const { owner_user_id } = req.params;
 
   try {
@@ -84,7 +85,7 @@ router.get('/stables/owner/:owner_user_id', async (req, res) => {
 });
 
 // GET /stables/by-user/:user_id 
-router.get('/stable/by-user/:user_id', async (req, res) => {
+router.get('/stable/by-user/:user_id',middlewares.authMiddleware, async (req, res) => {
   const { user_id } = req.params;
 
   try {
@@ -96,7 +97,7 @@ router.get('/stable/by-user/:user_id', async (req, res) => {
   }
 });
 
-router.get('/user_stable/:owner_user_id/stables', async (req, res) => {
+router.get('/user_stable/:owner_user_id/stables',middlewares.authMiddleware, async (req, res) => {
   const { owner_user_id } = req.params;
 
   if (!owner_user_id) {
@@ -115,7 +116,7 @@ router.get('/user_stable/:owner_user_id/stables', async (req, res) => {
 
 
 // PUT /stables/:id
-router.put('/stable/:id', async (req, res) => {
+router.put('/stable/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { name, phone, phone2, address_id, user_id } = req.body;
 
@@ -135,7 +136,7 @@ router.put('/stable/:id', async (req, res) => {
 });
 
 // DELETE /stables/:id
-router.delete('/stable/:id', async (req, res) => {
+router.delete('/stable/:id',middlewares.authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {

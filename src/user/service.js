@@ -136,7 +136,7 @@ const User = {
             id: row.address_id,
             address: row.address,
             city: row.city,
-            postal_Code: row.postal_code,
+            postal_code: row.postal_code,
             country: row.country,
             latitude: row.latitude,
             longitude: row.longitude,
@@ -240,7 +240,7 @@ const User = {
         addresses = []
       } = data;
 
-      console.log(data)
+ 
 
       const userRes = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
       const user = userRes.rows[0];
