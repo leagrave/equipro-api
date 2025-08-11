@@ -30,7 +30,7 @@ router.get('/professional/:id',middlewares.authMiddleware, async (req, res) => {
 });
 
 // Professionnel type
-router.get('/professionalType',middlewares.authMiddleware, async (req, res) => {
+router.get('/professionalType', async (req, res) => {
   try {
     const professional = await Professional.getAllProfessionalsTypes();
     if (!professional) {
