@@ -11,7 +11,7 @@ const pool = require("../config/db");
 const signUp = async (first_name, last_name, email, password, professional) => {
     try {
         // Vérifier si l'utilisateur existe déjà
-        const userExists = await pool.query(`SELECT * FROM users WHERE email = ${email}`);
+        const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.length > 0) {
             return { message: "L'utilisateur existe déjà" };
         }
@@ -31,7 +31,6 @@ const signUp = async (first_name, last_name, email, password, professional) => {
 
         // crée le user dans firebase
         syncUserWithFirebase(cleanUid,email,password,first_name,"")
-
         
         return newUser[0];
     } catch (error) {
@@ -39,49 +38,55 @@ const signUp = async (first_name, last_name, email, password, professional) => {
     }
 };
 
+ const upsertAddress = async (userId, addressData) => {
+    const client = await pool.connect();
+    const { idAddress, address, city, postalCode, country, type } = addressData;
+
+    if (idAddress !== undefined && idAddress !== null) {
+      const checkRes = await client.query(
+        'SELECT id FROM addresses WHERE id = $1 AND user_id = $2',
+        [idAddress, userId]
+      );
+      if (checkRes.rows.length === 0) {
+        throw new Error(`Adresse avec id ${idAddress} non trouvée pour cet utilisateur.`);
+      }
+
+      await client.query(
+        `UPDATE addresses SET address = $1, city = $2, postal_code = $3, country = $4, updated_at = NOW()
+        WHERE id = $5`,
+        [address, city, postalCode , country, idAddress]
+      );
+      return idAddress;
+    } else {
+      const insertRes = await client.query(
+        `INSERT INTO addresses (user_id, address, city, postal_code, country, type)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [userId, address, city, postalCode, country , type]
+      );
+      return insertRes.rows[0].id;
+    }
+  }
+
 // Fonction pour l'inscription du client
-const signUpCustomers = async (userId, phone, phone2, isSociete, addresse, billing_addresse) => {
+const signUpCustomers = async (userId, phone, phone2, isSociete, address_id, billing_address_id, societe_name) => {
     try {
 
         // Vérifier si l'utilisateur existe déjà dans la table des clients
         const existingCustomer = await pool.query(`
-            SELECT * FROM customers WHERE user_id = ${userId}
-        `);
+            SELECT * FROM customers WHERE user_id = $1
+        `,[userId]);
             
         if (existingCustomer.length > 0) {
             throw new Error("Ce client existe déjà.");
         }
 
 
-        let addressId = null;
-        let addressIdBilling = null;
-
-        // Vérifier si l'adresse est fournie, sinon ne pas l'inclure dans la requête
-        if (Array.isArray(addresse) && addresse.length > 0) {
-            const newAddress = await pool.query(`
-                INSERT INTO addresses (address, city, postal_code, country)
-                VALUES (${addresse[0].address}, ${addresse[0].city}, ${addresse[0].postal_code}, ${addresse[0].country || 'France'})
-                RETURNING id;
-            `);
-            addressId = newAddress[0].id;
-        }
-
-        // Vérifier si l'adresse de facturation est fournie, sinon ne pas l'inclure dans la requête
-        if (Array.isArray(billing_addresse) && billing_addresse.length > 0) {
-            const newAddressBilling = await pool.query(`
-                INSERT INTO addresses (address, city, postal_code, country)
-                VALUES (${billing_addresse[0].address}, ${billing_addresse[0].city}, ${billing_addresse[0].postal_code}, ${billing_addresse[0].country || 'France'})
-                RETURNING id;
-            `);
-            addressIdBilling = newAddressBilling[0].id;
-        }
-
         // Insérer un nouveau client (customer)
         const newCustomer = await pool.query(`
-            INSERT INTO customers (user_id, phone, phone2, address_id, billing_address_id, is_societe)
-            VALUES (${userId}, ${phone}, ${phone2}, ${addressId}, ${addressIdBilling}, ${isSociete || false})
-            RETURNING id, user_id, phone;
-        `);
+            INSERT INTO customers (user_id, phone, phone2, address_id, billing_address_id, is_societe, societe_name)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id, user_id ;
+        `, [userId, phone, phone2,address_id, billing_address_id, isSociete, societe_name]);
 
         return newCustomer[0];
     } catch (error) {
@@ -91,13 +96,13 @@ const signUpCustomers = async (userId, phone, phone2, isSociete, addresse, billi
 
 
 // Fonction pour l'inscription du client
-const signUpProfessional = async (userId, phone, phone2, societeName, addresse, siretNumber, professionalType) => {
+const signUpProfessional = async (user_id, phone, phone2, societe_name, address_id, siret_number, professional_types_id, is_verified ) => {
     try {
 
         // Vérifier si l'utilisateur existe déjà dans la table des profesionnels
         const existingProfessional = await pool.query(`
-            SELECT * FROM professionals WHERE user_id = ${userId}
-        `);
+            SELECT * FROM professionals WHERE user_id = $1
+        `, [user_id]);
             
         if (existingProfessional.length > 0) {
             return { message: "Ce professionnel existe déjà." };
@@ -105,36 +110,22 @@ const signUpProfessional = async (userId, phone, phone2, societeName, addresse, 
 
         // Vérifier l'existence du type de profession
         const professionalTypeExists = await pool.query(`
-            SELECT id FROM professional_types WHERE professional_type_name = ${professionalType}
-        `);
+            SELECT id FROM professional_types WHERE id = $1
+        `,[professional_types_id]);
     
         if (professionalTypeExists.length === 0) {
             throw new Error("Le type de profession spécifié n'existe pas");
         }   
-        const professionalTypeId = professionalTypeExists[0].id;
-
-
-        // Vérifier si l'adresse est fournie, sinon ne pas l'inclure dans la requête
-        let addressId = null;
-        if (Array.isArray(addresse) && addresse.length > 0) {
-            const newAddress = await pool.query(`
-                INSERT INTO addresses (address, city, postal_code, country)
-                VALUES (${addresse[0].address}, ${addresse[0].city}, ${addresse[0].postal_code}, ${addresse[0].country || 'France'})
-                RETURNING id;
-            `);
-            addressId = newAddress[0].id;
-        }
-
 
         // Insérer un nouveau professionnel
         const newProfessional  = await pool.query(`
-            INSERT INTO professionals (user_id, phone, phone2, address_id, siret_number, societe_name, professional_types_id)
-            VALUES (${userId}, ${phone}, ${phone2}, ${addressId}, ${siretNumber}, ${societeName}, ${professionalTypeId})
+            INSERT INTO professionals (user_id, phone, phone2, address_id, siret_number, societe_name, professional_types_id, is_verified)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id, user_id;
-        `);
+        `, [user_id,phone,phone2,address_id,siret_number,societe_name,professional_types_id,is_verified]);
 
         // Après la création du professionnel, vérifier le SIRET de manière asynchrone
-        checkSiretAndUpdateVerification(newProfessional[0].id, siretNumber);
+        checkSiretAndUpdateVerification(newProfessional[0].id, siret_number);
 
         return newProfessional[0];
     } catch (error) {
@@ -289,4 +280,4 @@ function isValidUrl(string) {
   }
 }
 
-module.exports = { signUp, signUpCustomers, signUpProfessional };
+module.exports = { signUp, signUpCustomers, signUpProfessional, upsertAddress };

@@ -1,29 +1,56 @@
 
 const express = require("express");
-const { signUp, signUpCustomers, signUpProfessional } = require("../signUp/service");
+const { signUp, signUpCustomers, signUpProfessional,upsertAddress } = require("../signUp/service");
 
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
     try {
-        const { first_name, last_name, email, password, professional, phone, phone2, address, billing_address, societeName, siretNumber, professionalType } = req.body;
+        const {
+        lastName,
+        firstName,
+        email,
+        password,
+        phone,
+        phone2,
+        siretNumber,
+        societeName,
+        isSociete,
+        role,
+        idProfessionalType,
+        addresses
+        } = req.body;
+
+
+        // Déterminer le booléen professional à partir de role string
+        const professional = role === 'professionnel';
+
+        // Mapper pour appel fonctions plus bas
 
         // Vérification des champs
-        if (!first_name || !last_name || !email || !password || !professional) {
+        if (!firstName || !lastName || !email || !password || !professional) {
             return res.status(400).json({ error: "Tous les champs sont requis" });
         }
 
         // Créer l'utilisateur
-        const newUser = await signUp(first_name, last_name, email, password, professional);
+        const newUser = await signUp(firstName, lastName, email, password, professional);
+
+        // Créer les adresses
+              // Gestion des adresses (main et billing)
+        const mainAddress = addresses.find(a => a.type === 'main');
+        const billingAddress = addresses.find(a => a.type === 'billing');
+
+        const addressId = mainAddress ? await upsertAddress(newUser.id, mainAddress) : null;
+        const billingId = billingAddress ? await upsertAddress(newUser.id, billingAddress) : null;
 
         // Si le rôle est 'particulier', créer un client
         if (professional === false) {
-            await signUpCustomers(newUser.id, phone, phone2, req.body.isSociete, address, billing_address);
+            await signUpCustomers(newUser.id, phone, phone2, isSociete, addressId, billingId, societeName);
         }
 
         // Si le rôle est 'professionnel', créer un professionnel
         if (professional === true) {
-            await signUpProfessional(newUser.id, phone, phone2, societeName, address, siretNumber, professionalType);
+            await signUpProfessional(newUser.id, phone, phone2, societeName, addressId, siretNumber, idProfessionalType, false);
         }
 
         res.status(201).json({ message: "Utilisateur créé avec succès", user: newUser });
