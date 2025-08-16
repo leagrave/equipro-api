@@ -1,15 +1,12 @@
-
-
 const { Pool } = require('pg');
 
-
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, 
+  connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false // nécessaire pour les connexions sécurisées sur Render
+    rejectUnauthorized: false // nécessaire pour les connexions sécurisées sur Render/Neon
   },
-  //idleTimeoutMillis: 10000, // 10 secondes (tu peux adapter)
-  connectionTimeoutMillis: 2000,
+  idleTimeoutMillis: 30000,       // 30 secondes avant de fermer une connexion inactive
+  connectionTimeoutMillis: 10000, // 10 secondes pour établir une connexion
 });
 
 pool.connect()

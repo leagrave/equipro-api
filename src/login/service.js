@@ -1,22 +1,31 @@
-require("dotenv").config();
+require("dotenv").config(); // Must be first
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const pool = require("../config/db");
 const { logger } = require("../securite/error-handlers");
 
+// Vérification des secrets au démarrage
+if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  throw new Error("JWT_SECRET et JWT_REFRESH_SECRET doivent être définis dans .env ou variables d'environnement");
+}
+
+// Validation de login
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
 });
 
+// Protection bruteforce
 const attempts = {};
 const MAX = 5;
 const BLOCK_MS = 15 * 60 * 1000;
 
+// Fonctions pour signer les tokens
 const signAccess = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
 const signRefresh = (payload) => jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
+// Fonction login
 const login = async (email, password) => {
   const { error } = loginSchema.validate({ email, password });
   if (error) throw new Error("Entrée invalide");
@@ -34,6 +43,7 @@ const login = async (email, password) => {
      WHERE u.email = $1`,
     [email]
   );
+
   if (!rows.length) {
     attempts[email] = { c: a.c + 1, t: now };
     logger.warn(`Login échoué (user introuvable) - ${email}`);
@@ -48,6 +58,7 @@ const login = async (email, password) => {
     throw new Error("Mot de passe incorrect");
   }
 
+  // Reset attempts
   attempts[email] = { c: 0, t: now };
 
   const payload = { id: user.id, email: user.email, professional: user.professional, pro_id: user.pro_id };
@@ -70,6 +81,7 @@ const login = async (email, password) => {
   };
 };
 
+// Fonction refresh token
 const refresh = (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
