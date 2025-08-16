@@ -38,42 +38,41 @@ Sentry.init({
 });
 
 // -------- Security headers (Helmet + CSP) ----------
-app.disable("x-powered-by");
-app.use(helmet({
-  contentSecurityPolicy: {
-    useDefaults: true,
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", process.env.API_URL],
-      connectSrc: ["'self'", process.env.API_URL],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      upgradeInsecureRequests: [],
-    },
-  },
-  referrerPolicy: { policy: "no-referrer" },
-  crossOriginResourcePolicy: { policy: "same-origin" },
-  crossOriginEmbedderPolicy: false, // selon besoins front
-}));
-
-// -------- CORS strict ----------
-// const allowedOrigins = [process.env.FRONT_URL]; 
-// app.use(cors({
-//   origin: (origin, cb) => {
-//     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-//     cb(new Error("CORS non autorisé"));
+// app.disable("x-powered-by");
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     useDefaults: true,
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       scriptSrc: ["'self'"],
+//       objectSrc: ["'none'"],
+//       baseUri: ["'self'"],
+//       upgradeInsecureRequests: [],
+//     },
 //   },
-//   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-//   credentials: true,
+//   referrerPolicy: { policy: "no-referrer" },
+//   crossOriginResourcePolicy: { policy: "same-origin" },
+//   crossOriginEmbedderPolicy: false, // selon besoins front
 // }));
 
+// -------- CORS strict ----------
+const allowedOrigins = [process.env.FRONT_URL]; 
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error("CORS non autorisé"));
+  },
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  credentials: true,
+}));
+
 // -------- HTTPS redirect (prod) ----------
-// app.use((req, res, next) => {
-//   if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
-//     return res.redirect(`https://${req.headers.host}${req.url}`);
-//   }
-//   next();
-// });
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
 
 // -------- Body parser & limites ----------
 app.use(express.json({ limit: "200kb" })); // adapte selon tes besoins
