@@ -1,34 +1,26 @@
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 require('dotenv').config();
 
 const middlewares = {
-  decodeJwt: (token) => {
-    return jwt.verify(token, process.env.JWT_SECRET);
-  },
+  decodeJwt: (token, secret = process.env.JWT_SECRET) => jwt.verify(token, secret),
 
   checkAuthZHeader: (header, authZType) => {
-    if (!header || typeof header !== 'string') {
-      return [400, "En-tête Authorization manquante"];
-    }
+    if (!header || typeof header !== 'string') return [400, "En-tête Authorization manquante"];
     const authType = header.split(' ')[0];
-    if (authType !== authZType) {
-      return [400, `Utilisez l'Authorization '${authZType}'`];
-    }
+    if (authType !== authZType) return [400, `Utilisez l'Authorization '${authZType}'`];
     return [200, "En-tête valide"];
   },
 
   authMiddleware: (req, res, next) => {
     const authHeader = req.headers.authorization;
     const [status, message] = middlewares.checkAuthZHeader(authHeader, 'Bearer');
-    if (status !== 200) {
-      return res.status(status).json({ error: message });
-    }
+    if (status !== 200) return res.status(status).json({ error: message });
 
     const token = authHeader.split(' ')[1];
-
     try {
       const decoded = middlewares.decodeJwt(token);
-      req.user = decoded; // on attache le payload décodé
+      req.user = decoded;
       next();
     } catch (err) {
       console.error('Token invalide ou expiré:', err);
@@ -37,13 +29,16 @@ const middlewares = {
   },
 
   verifyRole: (roles) => (req, res, next) => {
-    const user = req.user; // JWT décodé
-    const userRole = user.professional ? 'pro' : 'user';
-    if (!roles.includes(userRole)) {
-      return res.status(403).json({ message: 'Accès refusé' });
-    }
+    const userRole = req.user.professional ? 'pro' : 'user';
+    if (!roles.includes(userRole)) return res.status(403).json({ message: 'Accès refusé' });
     next();
   },
+
+  validateBody: (schema) => (req, res, next) => {
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+    next();
+  }
 };
 
 module.exports = middlewares;
