@@ -82,12 +82,8 @@ app.use(compression());
 // // -------- Logs HTTP (morgan) ----------
 // app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// -------- Rate limiting ----------
-app.use(globalLimiter);          // global
-
-
 // Appliquer limiter global à toutes les routes
-app.use(globalLimiter);
+//app.use(globalLimiter);
 
 // ======================
 // Routes API
