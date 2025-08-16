@@ -84,7 +84,6 @@ app.use(compression());
 
 // -------- Rate limiting ----------
 app.use(globalLimiter);          // global
-app.use("/api/login", authLimiter); // anti-bruteforce sur /login
 
 
 // Appliquer limiter global à toutes les routes
@@ -94,7 +93,7 @@ app.use(globalLimiter);
 // Routes API
 // ======================
 app.get("/", (req, res) => res.send("Hello world!"));
-//app.use("/api", loginRoute);
+app.use("/api", loginRoute, authLimiter);
 app.use("/api", signUpRoute);
 app.use("/api", userRoute);
 app.use("/api", uploadRoute);
