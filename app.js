@@ -44,7 +44,8 @@ app.use(helmet({
     useDefaults: true,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", process.env.API_URL],
+      connectSrc: ["'self'", process.env.API_URL],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       upgradeInsecureRequests: [],
