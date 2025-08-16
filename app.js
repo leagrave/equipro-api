@@ -38,25 +38,26 @@ Sentry.init({
 });
 
 // -------- Security headers (Helmet + CSP) ----------
-// app.disable("x-powered-by");
-// app.use(helmet({
-//   contentSecurityPolicy: {
-//     useDefaults: true,
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       scriptSrc: ["'self'"],
-//       objectSrc: ["'none'"],
-//       baseUri: ["'self'"],
-//       upgradeInsecureRequests: [],
-//     },
-//   },
-//   referrerPolicy: { policy: "no-referrer" },
-//   crossOriginResourcePolicy: { policy: "same-origin" },
-//   crossOriginEmbedderPolicy: false, // selon besoins front
-// }));
+app.disable("x-powered-by");
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  referrerPolicy: { policy: "no-referrer" },
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  crossOriginEmbedderPolicy: false, // selon besoins front
+}));
 
 // -------- CORS strict ----------
-const allowedOrigins = [process.env.FRONT_URL]; 
+const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000"];
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
@@ -75,7 +76,7 @@ app.use((req, res, next) => {
 });
 
 // -------- Body parser & limites ----------
-app.use(express.json({ limit: "200kb" })); // adapte selon tes besoins
+app.use(express.json({ limit: "1mb" })); 
 app.use(compression());
 
 // -------- Logs HTTP (morgan) ----------
