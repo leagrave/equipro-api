@@ -34,3 +34,4 @@ jobs:
           body: |
             Les tests ont été exécutés sur la branche de correctif **${{ github.ref }}**
             et tous les tests sont passés.
+          token: ${{ secrets.GITHUB_TOKEN }}
