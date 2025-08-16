@@ -38,7 +38,21 @@ const middlewares = {
     const { error } = schema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
     next();
-  }
+  },
+
+  // Guard ownership: s’assurer que l’utilisateur peut accéder à la ressource
+ ensureOwnership: (getResourceOwner) => async (req, res, next) => {
+    try {
+      const ownerId = await getResourceOwner(req); // ex: récupère pro_id du record
+      const userProId = req.user?.pro_id;
+      if (ownerId && userProId && ownerId !== userProId) {
+        return res.status(403).json({ error: "Accès refusé (ownership)" });
+      }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  },
 };
 
 module.exports = middlewares;

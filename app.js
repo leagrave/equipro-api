@@ -3,8 +3,13 @@ const express = require("express");
 const cors = require("cors");
 const Sentry = require("@sentry/node");
 const rateLimit = require("express-rate-limit");
+const compression = require("compression");
 const helmet = require("helmet");
 const xss = require("xss-clean");
+const morgan = require("morgan");
+
+const { errorHandler, notFoundHandler } = require("./src/securite/error-handlers");
+const { authLimiter, globalLimiter } = require("./src/securite/rate-limiters");
 
 // Import des routes
 const loginRoute = require("./src/login/router");
@@ -22,7 +27,7 @@ const ecuriesRoute = require("./src/ecurie/router");
 const interventionRoute = require("./src/intervention/router");
 
 const app = express();
-const allowedOrigins = ["https://equipro.onrender.com"];
+
 
 // ======================
 // Sentry
@@ -32,67 +37,54 @@ Sentry.init({
   sendDefaultPii: true,
 });
 
-// ======================
-// Middleware sécurité
-// ======================
+// -------- Security headers (Helmet + CSP) ----------
+app.disable("x-powered-by");
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: true,
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       objectSrc: ["'none'"],
+      baseUri: ["'self'"],
       upgradeInsecureRequests: [],
     },
   },
+  referrerPolicy: { policy: "no-referrer" },
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  crossOriginEmbedderPolicy: false, // selon besoins front
 }));
-app.use(xss());
 
-
-// ======================
-// CORS
-// ======================
+// -------- CORS strict ----------
+const allowedOrigins = [process.env.FRONT_URL]; 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS non autorisé"));
-    }
-  }
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error("CORS non autorisé"));
+  },
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  credentials: true,
 }));
 
-// ======================
-// JSON Parser
-// ======================
-app.use(express.json({ limit: "10kb" })); // Limite la taille du payload
-
-// ======================
-// HTTPS Redirection (prod only)
-// ======================
+// -------- HTTPS redirect (prod) ----------
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production" && req.header("x-forwarded-proto") !== "https") {
-    return res.redirect(`https://${req.header("host")}${req.url}`);
+  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
   }
   next();
 });
 
-// ======================
-// Rate Limiter
-// ======================
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 5,
-  message: "Trop de tentatives de connexion, réessayez plus tard",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-const globalLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 min
-  max: 100, // max 100 requêtes/min
-  message: "Trop de requêtes, réessayez plus tard",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// -------- Body parser & limites ----------
+app.use(express.json({ limit: "200kb" })); // adapte selon tes besoins
+app.use(compression());
+
+// -------- Logs HTTP (morgan) ----------
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// -------- Rate limiting ----------
+app.use(globalLimiter);          // global
+app.use("/api/login", authLimiter); // anti-bruteforce sur /login
+
 
 // Appliquer limiter global à toutes les routes
 app.use(globalLimiter);
@@ -101,7 +93,7 @@ app.use(globalLimiter);
 // Routes API
 // ======================
 app.get("/", (req, res) => res.send("Hello world!"));
-app.use("/api", loginLimiter, loginRoute);
+app.use("/api", loginRoute);
 app.use("/api", signUpRoute);
 app.use("/api", userRoute);
 app.use("/api", uploadRoute);
@@ -123,13 +115,9 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 });
 Sentry.setupExpressErrorHandler(app);
 
-// ======================
-// Fallthrough Error Handler
-// ======================
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: "Une erreur est survenue. Contactez le support." });
-});
+// -------- 404 + erreurs centralisées ----------
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // ======================
 // Lancement serveur

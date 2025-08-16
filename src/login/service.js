@@ -1,88 +1,85 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const pool = require('../config/db');
-const logger = require('../securite/logger');
 const Joi = require("joi");
-
-// Limitation brute force
-const loginAttempts = {};
-const MAX_ATTEMPTS = 5;
-const BLOCK_TIME = 15 * 60 * 1000; // 15 minutes
+const pool = require("../config/db");
+const { logger } = require("../securite/error-handlers");
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).required()
+  password: Joi.string().min(8).required(),
 });
 
+const attempts = {};
+const MAX = 5;
+const BLOCK_MS = 15 * 60 * 1000;
+
+const signAccess = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+const signRefresh = (payload) => jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+
 const login = async (email, password) => {
-  try {
-    // Validation des données
-    const { error } = loginSchema.validate({ email, password });
-    if (error) throw new Error("Entrée invalide");
+  const { error } = loginSchema.validate({ email, password });
+  if (error) throw new Error("Entrée invalide");
 
-    // Vérification brute force
-    const attempt = loginAttempts[email] || { count: 0, last: Date.now() };
-    if (attempt.count >= MAX_ATTEMPTS && (Date.now() - attempt.last < BLOCK_TIME)) {
-      throw new Error("Trop de tentatives. Réessayez plus tard.");
-    }
+  const now = Date.now();
+  const a = attempts[email] || { c: 0, t: now };
+  if (a.c >= MAX && now - a.t < BLOCK_MS) {
+    logger.warn(`Blocage login (bruteforce) - ${email}`);
+    throw new Error("Trop de tentatives. Réessayez plus tard.");
+  }
 
-    // Récupération utilisateur
-    const result = await pool.query(
-      `SELECT u.*, p.id AS pro_id
-       FROM users u
-       LEFT JOIN professionals p ON p.user_id = u.id
-       WHERE u.email = $1`,
-      [email]
-    );
+  const { rows } = await pool.query(
+    `SELECT u.*, p.id AS pro_id
+     FROM users u LEFT JOIN professionals p ON p.user_id = u.id
+     WHERE u.email = $1`,
+    [email]
+  );
+  if (!rows.length) {
+    attempts[email] = { c: a.c + 1, t: now };
+    logger.warn(`Login échoué (user introuvable) - ${email}`);
+    throw new Error("Utilisateur non trouvé");
+  }
 
-    if (result.rows.length === 0) {
-      logger.warn(`Tentative login échouée : utilisateur non trouvé - ${email}`);
-      loginAttempts[email] = { count: attempt.count + 1, last: Date.now() };
-      throw new Error("Utilisateur non trouvé");
-    }
+  const user = rows[0];
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) {
+    attempts[email] = { c: a.c + 1, t: now };
+    logger.warn(`Login échoué (mdp) - ${email}`);
+    throw new Error("Mot de passe incorrect");
+  }
 
-    const user = result.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
+  attempts[email] = { c: 0, t: now };
 
-    if (!isMatch) {
-      logger.warn(`Tentative login échouée : mot de passe incorrect - ${email}`);
-      loginAttempts[email] = { count: attempt.count + 1, last: Date.now() };
-      throw new Error("Mot de passe incorrect");
-    }
+  const payload = { id: user.id, email: user.email, professional: user.professional, pro_id: user.pro_id };
+  const token = signAccess(payload);
+  const refreshToken = signRefresh(payload);
 
-    // Réinitialiser compteur après succès
-    loginAttempts[email] = { count: 0, last: Date.now() };
+  logger.info(`Login OK - ${email}`);
 
-    // Création JWT
-    const payload = {
+  return {
+    token,
+    refreshToken,
+    user: {
       id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
       email: user.email,
       professional: user.professional,
-      pro_id: user.pro_id
-    };
+      pro_id: user.pro_id,
+    },
+  };
+};
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
-
-    logger.info(`Connexion réussie - ${email}`);
-
-    return {
-      token,
-      refreshToken,
-      user: {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        professional: user.professional,
-        pro_id: user.pro_id
-      }
-    };
-  } catch (error) {
-    logger.error(`Erreur login pour ${email} : ${error.message}`);
-    throw new Error(error.message);
+const refresh = (refreshToken) => {
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const { id, email, professional, pro_id } = decoded;
+    return { token: signAccess({ id, email, professional, pro_id }) };
+  } catch {
+    const e = new Error("Refresh token invalide ou expiré");
+    e.status = 401;
+    throw e;
   }
 };
 
-module.exports = { login };
+module.exports = { login, refresh };
