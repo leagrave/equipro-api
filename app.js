@@ -67,12 +67,12 @@ app.use(cors({
 }));
 
 // -------- HTTPS redirect (prod) ----------
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
-    return res.redirect(`https://${req.headers.host}${req.url}`);
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
+//     return res.redirect(`https://${req.headers.host}${req.url}`);
+//   }
+//   next();
+// });
 
 // -------- Body parser & limites ----------
 app.use(express.json({ limit: "200kb" })); // adapte selon tes besoins
