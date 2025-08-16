@@ -36,7 +36,7 @@ router.get('/users',middlewares.authMiddleware, async (req, res) => {
 router.get('/user/pro/:id', middlewares.authMiddleware, async (req, res) => {
   const requestedUserId = req.params.id;
   const authUserId = req.user.id;
-
+  console.log(requestedUserId)
   if (authUserId !== requestedUserId) {
     return res.status(403).json({ error: 'Accès refusé' });
   }

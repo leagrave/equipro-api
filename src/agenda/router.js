@@ -16,7 +16,7 @@ router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {
 
 // Récupération des infos d’un utilisateur
 router.get('/agendaAll/:userId',middlewares.authMiddleware, async (req, res) => {
-
+    console.log(req.params.userId)
     try {
     if (req.user.id !== req.params.userId) {
       return res.status(403).json({ error: "Accès refusé pour cet utilisateur" });
