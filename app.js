@@ -38,49 +38,49 @@ Sentry.init({
 });
 
 // -------- Security headers (Helmet + CSP) ----------
-app.disable("x-powered-by");
-app.use(helmet({
-  contentSecurityPolicy: {
-    useDefaults: true,
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      upgradeInsecureRequests: [],
-    },
-  },
-  referrerPolicy: { policy: "no-referrer" },
-  crossOriginResourcePolicy: { policy: "same-origin" },
-  crossOriginEmbedderPolicy: false, // selon besoins front
-}));
+// app.disable("x-powered-by");
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     useDefaults: true,
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       scriptSrc: ["'self'"],
+//       objectSrc: ["'none'"],
+//       baseUri: ["'self'"],
+//       upgradeInsecureRequests: [],
+//     },
+//   },
+//   referrerPolicy: { policy: "no-referrer" },
+//   crossOriginResourcePolicy: { policy: "same-origin" },
+//   crossOriginEmbedderPolicy: false, // selon besoins front
+// }));
 
-// -------- CORS strict ----------
-const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000", undefined];
+// // -------- CORS strict ----------
+// const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000", undefined];
 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error("CORS non autorisé"));
-  },
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: (origin, cb) => {
+//     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+//     cb(new Error("CORS non autorisé"));
+//   },
+//   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+//   credentials: true,
+// }));
 
-// -------- HTTPS redirect (prod) ----------
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
-    return res.redirect(`https://${req.headers.host}${req.url}`);
-  }
-  next();
-});
+// // -------- HTTPS redirect (prod) ----------
+// app.use((req, res, next) => {
+//   if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
+//     return res.redirect(`https://${req.headers.host}${req.url}`);
+//   }
+//   next();
+// });
 
 // -------- Body parser & limites ----------
 app.use(express.json({ limit: "1mb" })); 
 app.use(compression());
 
-// -------- Logs HTTP (morgan) ----------
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+// // -------- Logs HTTP (morgan) ----------
+// app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // -------- Rate limiting ----------
 app.use(globalLimiter);          // global
@@ -94,7 +94,7 @@ app.use(globalLimiter);
 // Routes API
 // ======================
 app.get("/", (req, res) => res.send("Hello world!"));
-app.use("/api", loginRoute);
+//app.use("/api", loginRoute);
 app.use("/api", signUpRoute);
 app.use("/api", userRoute);
 app.use("/api", uploadRoute);
