@@ -123,7 +123,7 @@ router.delete('/user/:id',middlewares.authMiddleware, async (req, res) => {
 });
 
 // verif email
-router.get('/user/email/checkEmail',middlewares.authMiddleware, async (req, res) => {
+router.get('/user/email/checkEmail', async (req, res) => {
   const { email } = req.query;
 
   if (!email) {
