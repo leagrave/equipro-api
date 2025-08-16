@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-
 const middlewares = {
   decodeJwt: (token) => {
     return jwt.verify(token, process.env.JWT_SECRET);
@@ -35,6 +34,15 @@ const middlewares = {
       console.error('Token invalide ou expiré:', err);
       return res.status(401).json({ error: "Token invalide ou expiré" });
     }
+  },
+
+  verifyRole: (roles) => (req, res, next) => {
+    const user = req.user; // JWT décodé
+    const userRole = user.professional ? 'pro' : 'user';
+    if (!roles.includes(userRole)) {
+      return res.status(403).json({ message: 'Accès refusé' });
+    }
+    next();
   },
 };
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const agendaService = require('../agenda/service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // Récupération de l’agenda d’un utilisateur
 router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {

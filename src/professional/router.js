@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Professional = require('./service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // Tous les professionnels
 router.get('/professionals',middlewares.authMiddleware, async (req, res) => {

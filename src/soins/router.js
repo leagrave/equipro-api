@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Soins = require('./service'); 
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 
 // Pro → infos d’un client
-router.get('/pro/:professionalId/customer/:customerId',middlewares.authMiddleware, async (req, res) => {
+router.get('/pro/:professionalId/customer/:customerId', middlewares.authMiddleware, middlewares.verifyRole(['pro']), async (req, res) => {
   const { professionalId, customerId } = req.params;
   try {
     const data = await Soins.getCustomerVisitByProfessional(professionalId, customerId);
@@ -21,7 +21,7 @@ router.get('/pro/:professionalId/customer/:customerId',middlewares.authMiddlewar
 });
 
 // Pro → infos dernier rendez-vous d’un client
-router.get('/lastVisit/pro/:professionalId/customer/:customerId',middlewares.authMiddleware, async (req, res) => {
+router.get('/lastVisit/pro/:professionalId/customer/:customerId',middlewares.authMiddleware,middlewares.verifyRole(['pro', 'user']), async (req, res) => {
   const { professionalId, customerId } = req.params;
 
   try {
@@ -37,7 +37,7 @@ router.get('/lastVisit/pro/:professionalId/customer/:customerId',middlewares.aut
 });
 
 // Pro → historique de tous ses clients
-router.get('/pro/:professionalId/history',middlewares.authMiddleware, async (req, res) => {
+router.get('/pro/:professionalId/history',middlewares.authMiddleware,middlewares.verifyRole(['pro']), async (req, res) => {
   const { professionalId } = req.params;
   try {
     const data = await Soins.getAllCustomerVisitsByProfessional(professionalId);

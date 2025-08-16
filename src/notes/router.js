@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Notes = require('./service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // Créer une note
 router.post('/note',middlewares.authMiddleware, async (req, res) => {

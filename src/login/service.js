@@ -2,6 +2,7 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require('../config/db');
+const logger = require('../securite/logger'); 
 
 
 const login = async (email, password) => {
@@ -16,13 +17,14 @@ const login = async (email, password) => {
     );
 
     if (result.rows.length === 0) {
+      logger.warn(`Tentative login échouée : utilisateur non trouvé - ${email}`);
       throw new Error("Utilisateur non trouvé");
     }
-
     const user = result.rows[0];
-
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
+      logger.warn(`Tentative login échouée : mot de passe incorrect - ${email}`);
       throw new Error("Mot de passe incorrect");
     }
 
@@ -37,6 +39,8 @@ const login = async (email, password) => {
       { expiresIn: "7d" }
     );
 
+    logger.info(`Connexion réussie - ${email}`);
+
     return {
       token,
       user: {
@@ -48,7 +52,8 @@ const login = async (email, password) => {
         pro_id: user.pro_id 
       }
     };
-  } catch (error) {
+  }  catch (error) {
+    logger.error(`Erreur login pour ${email} : ${error.message}`);
     throw new Error(error.message);
   }
 };

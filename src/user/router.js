@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('./service'); 
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // GET /api/users - Crée  un utilisateur
 router.post('/userCreate',middlewares.authMiddleware, async (req, res) => {

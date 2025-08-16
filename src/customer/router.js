@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('./service'); 
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // GET /api/customers - Récupérer tous les clients
 router.get('/customers', async (req, res) => {

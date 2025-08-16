@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const AddressService = require('./service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // Créer une nouvelle adresse
 router.post('/adresse',middlewares.authMiddleware, async (req, res) => {

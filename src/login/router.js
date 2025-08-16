@@ -1,6 +1,6 @@
 const express = require("express");
 const { login } = require("./service");
-const middlewares = require('../middlewares');
+
 
 
 const router = express.Router();

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const interventionService = require('./service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // POST
 router.post('/intervention',middlewares.authMiddleware, async (req, res) => {

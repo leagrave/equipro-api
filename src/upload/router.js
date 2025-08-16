@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 const upload = multer({ storage: multer.memoryStorage() });
 
 const { uploadFileToS3, saveFileMetaToDb, getSignedUrlFromKey, getFilesForUser  } = require('./service');

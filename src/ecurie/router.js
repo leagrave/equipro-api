@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const stableService = require('./service');
-const middlewares = require('../middlewares');
+const middlewares = require('../securite/middlewares');
 
 // POST /stables/by-owner
 router.post('/stable',middlewares.authMiddleware, async (req, res) => {
