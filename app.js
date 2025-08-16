@@ -57,15 +57,15 @@ app.use(helmet({
 }));
 
 // -------- CORS strict ----------
-const allowedOrigins = [process.env.FRONT_URL]; 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error("CORS non autorisé"));
-  },
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  credentials: true,
-}));
+// const allowedOrigins = [process.env.FRONT_URL]; 
+// app.use(cors({
+//   origin: (origin, cb) => {
+//     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+//     cb(new Error("CORS non autorisé"));
+//   },
+//   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+//   credentials: true,
+// }));
 
 // -------- HTTPS redirect (prod) ----------
 // app.use((req, res, next) => {
