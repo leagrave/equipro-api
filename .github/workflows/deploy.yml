@@ -2,7 +2,8 @@ name: Deploy Node API
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
 
 jobs:
   build-and-deploy:
@@ -34,6 +35,3 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
           echo "NODE_ENV=production" >> $GITHUB_ENV
 
-      - name: Deploy to Render (ou autre)
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

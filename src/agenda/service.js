@@ -148,19 +148,6 @@ async function getAllAgenda(userId) {
         phone2: row.phone2,
         societe_name: row.societe_name,
         is_societe: row.is_societe,
-        // adresse: row.adresse,
-        // postalCode: row.postal_code,
-        // city: row.city,
-        // country: row.country,
-        // longitude: row.longitude,
-        // latitude: row.latitude,
-        // // Adresse de facturation si client
-        // billingAdresse: row.billing_adresse,
-        // billingPostalCode: row.billing_postal_code,
-        // billingCity: row.billing_city,
-        // billingCountry: row.billing_country,
-        // billingLongitude: row.billing_longitude,
-        // billingLatitude: row.billing_latitude,
         addresses: [],
         horses: []
     });

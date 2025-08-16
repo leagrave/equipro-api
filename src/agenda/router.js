@@ -18,9 +18,7 @@ router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {
 router.get('/agendaAll/:userId',middlewares.authMiddleware, async (req, res) => {
 
     try {
-    if (req.user.id !== req.params.userId) {
-      return res.status(403).json({ error: "Accès refusé pour cet utilisateur" });
-    }
+
         const agenda = await agendaService.getAllAgenda(req.params.userId);
         res.json(agenda);
     } catch (err) {
