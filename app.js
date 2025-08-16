@@ -56,7 +56,7 @@ app.use(helmet({
 }));
 
 // -------- CORS strict ----------
-const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000"];
+const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000", undefined];
 
 app.use(cors({
   origin: (origin, cb) => {
