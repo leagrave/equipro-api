@@ -1,12 +1,13 @@
 {
   "name": "equipro-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "API Node.js",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "release": "standard-version"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "standard-version": "^9.5.0"
   }
 }
