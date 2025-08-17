@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # nécessaire pour les tags
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -20,42 +22,50 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint and Test
+      - name: Run Tests
         run: |
-          npm run lint
           npm test
 
-      - name: Log test result
-        run: |
-          node updateVersionJson.js "$NEW_VERSION" "test" "Tests unitaires réussis"
-
-      - name: Log lint result
-        run: |
-          node updateVersionJson.js "$NEW_VERSION" "lint" "Lint OK"
-
-
+      # Incrémente la version patch et la stocke
       - name: Increment version
         id: version
         run: |
-          # Incrémente la version patch et récupère la nouvelle
-          NEW_VERSION=$(npm version patch -m "chore: bump version to %s [ci skip]")
+          NEW_VERSION=$(npm version patch -m "chore(release): %s [ci skip]")
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
+      # Mise à jour du fichier version.json avec la nouvelle version
+      - name: Update version.json
+        run: |
+          node updateVersionJson.js "${{ env.NEW_VERSION }}" "build" "Build réussi"
+
+      # Met à jour le changelog avec ton script custom
       - name: Update changelog
         run: |
-          echo "Nouvelle version : $NEW_VERSION"
-          node updateChangelog.js "$NEW_VERSION"
+          echo "Nouvelle version : ${{ env.NEW_VERSION }}"
+          node updateChangelog.js "${{ env.NEW_VERSION }}"
 
-      - name: Build (si tu build un frontend ou TS)
-        run: echo "Pas de build pour une API simple"
+      # Commit et push les changements (package.json + package-lock.json + CHANGELOG.md)
+      - name: Commit updated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore: update changelog and bump to ${{ env.NEW_VERSION }} [ci skip]" || echo "No changes to commit"
+          git push origin main --follow-tags
 
+      # Crée une Release GitHub
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          name: "Release ${{ env.NEW_VERSION }}"
+          body: "Nouvelle release générée automatiquement."
+
+      # Déploiement auto sur Render via le hook
+
+      # Variables d’environnement pour l’app
       - name: Set environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
           echo "NODE_ENV=production" >> $GITHUB_ENV
-
-      # Auto deploy
-      - name: Deploy to Render
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

@@ -4,10 +4,11 @@
   "description": "API Node.js",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "release": "standard-version"
+    "release": "standard-version",
+    "lint": "eslint . --ext .js,.ts"
   },
   "keywords": [],
   "author": "",
@@ -42,7 +43,10 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "eslint": "^9.33.0",
+    "jest": "^30.0.5",
     "nodemon": "^3.1.9",
-    "standard-version": "^9.5.0"
+    "standard-version": "^9.5.0",
+    "supertest": "^7.1.4"
   }
 }

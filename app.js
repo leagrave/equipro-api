@@ -103,6 +103,8 @@ app.use("/api", notesRoute);
 app.use("/api", ecuriesRoute);
 app.use("/api", interventionRoute);
 
+
+
 // ======================
 // Test Sentry
 // ======================
@@ -119,6 +121,7 @@ app.use(errorHandler);
 // Lancement serveur
 // ======================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
-
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
+}
 
