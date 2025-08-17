@@ -1,0 +1,26 @@
+[
+  {
+    "version": "1.0.0",
+    "date": "01/01/2025",
+    "auteur": "J. Dupont",
+    "description": "Première version stable déployée",
+    "type": "Initiale",
+    "anomalie": ""
+  },
+  {
+    "version": "1.1.0",
+    "date": "15/02/2025",
+    "auteur": "A. Martin",
+    "description": "Ajout de la fonctionnalité d’export PDF",
+    "type": "Nouvelle fonction",
+    "anomalie": ""
+  },
+  {
+    "version": "1.2.1",
+    "date": "10/03/2025",
+    "auteur": "S. Leroy",
+    "description": "Correction erreur 500 lors de l’ajout d’un client",
+    "type": "Correctif",
+    "anomalie": "ANO-2025-001"
+  }
+]
