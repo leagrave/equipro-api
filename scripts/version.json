@@ -22,5 +22,13 @@
     "description": "Correction erreur 500 lors de l’ajout d’un client",
     "type": "Correctif",
     "anomalie": "ANO-2025-001"
+  },
+  {
+    "version": "v1.0.2",
+    "date": "2025-08-17",
+    "auteur": "CI/CD",
+    "description": "Build réussi",
+    "type": "build",
+    "anomalie": ""
   }
 ]
