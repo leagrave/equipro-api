@@ -95,11 +95,11 @@ jobs:
 
       - name: Update version.json
         run: |
-          node updateVersionJson.js "${{ env.NEW_VERSION }}" "build" "Build réussi"
+          node scripts/updateVersion.js "${{ env.NEW_VERSION }}" "build" "Build réussi"
 
       - name: Update changelog
         run: |
-          node updateChangelog.js "${{ env.NEW_VERSION }}"
+          node scripts/updateChangelog.js "${{ env.NEW_VERSION }}"
 
       - name: Commit updated files
         run: |

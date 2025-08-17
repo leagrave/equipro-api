@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Chemins
-const dataPath = path.join(__dirname, './version.json'); // ton fichier JSON
-const outputPath = path.join(__dirname, 'CHANGELOG.md'); // changelog
+const dataPath = path.join(__dirname, './version.json'); 
+const outputPath = path.join(__dirname, '../CHANGELOG.md'); 
 
 // Vérifier que le JSON existe
 if (!fs.existsSync(dataPath)) {
