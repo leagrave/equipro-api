@@ -5,6 +5,7 @@ const middlewares = require('../securite/middlewares');
 
 // POST
 router.post('/intervention',middlewares.authMiddleware, async (req, res) => {
+  console.log("Création d'une intervention avec les données :", req.body);
   try {
     const result = await interventionService.createIntervention(req.body);
     res.status(201).json(result);

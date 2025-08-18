@@ -6,6 +6,12 @@ const logger = createLogger({
 });
 
 const notFoundHandler = (req, res, next) => {
+  router.post('/userCreate', async (req, res) => {
+    console.log('>>> ROUTE /userCreate appelée');
+    console.log('BODY:', req.body);
+
+  });
+
   console.warn(`Ressource non trouvée : ${req.originalUrl}`);
   res.status(404).json({ error: "Ressource introuvable" });
 };

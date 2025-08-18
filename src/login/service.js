@@ -22,7 +22,7 @@ const MAX = 5;
 const BLOCK_MS = 15 * 60 * 1000;
 
 // Fonctions pour signer les tokens
-const signAccess = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+const signAccess = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
 const signRefresh = (payload) => jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
 // Fonction login

@@ -13,6 +13,7 @@ const middlewares = {
   },
 
   authMiddleware: (req, res, next) => {
+    console.log("Vérification de l'authentification...");
     const authHeader = req.headers.authorization;
     const [status, message] = middlewares.checkAuthZHeader(authHeader, 'Bearer');
     if (status !== 200) return res.status(status).json({ error: message });
@@ -28,31 +29,31 @@ const middlewares = {
     }
   },
 
-  verifyRole: (roles) => (req, res, next) => {
-    const userRole = req.user.professional ? 'pro' : 'user';
-    if (!roles.includes(userRole)) return res.status(403).json({ message: 'Accès refusé' });
-    next();
-  },
+//   verifyRole: (roles) => (req, res, next) => {
+//     const userRole = req.user.professional ? 'pro' : 'user';
+//     if (!roles.includes(userRole)) return res.status(403).json({ message: 'Accès refusé' });
+//     next();
+//   },
 
-  validateBody: (schema) => (req, res, next) => {
-    const { error } = schema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
-    next();
-  },
+//   validateBody: (schema) => (req, res, next) => {
+//     const { error } = schema.validate(req.body);
+//     if (error) return res.status(400).json({ error: error.details[0].message });
+//     next();
+//   },
 
-  // Guard ownership: s’assurer que l’utilisateur peut accéder à la ressource
- ensureOwnership: (getResourceOwner) => async (req, res, next) => {
-    try {
-      const ownerId = await getResourceOwner(req); // ex: récupère pro_id du record
-      const userProId = req.user?.pro_id;
-      if (ownerId && userProId && ownerId !== userProId) {
-        return res.status(403).json({ error: "Accès refusé (ownership)" });
-      }
-      next();
-    } catch (e) {
-      next(e);
-    }
-  },
+//   // Guard ownership: s’assurer que l’utilisateur peut accéder à la ressource
+//  ensureOwnership: (getResourceOwner) => async (req, res, next) => {
+//     try {
+//       const ownerId = await getResourceOwner(req); // ex: récupère pro_id du record
+//       const userProId = req.user?.pro_id;
+//       if (ownerId && userProId && ownerId !== userProId) {
+//         return res.status(403).json({ error: "Accès refusé (ownership)" });
+//       }
+//       next();
+//     } catch (e) {
+//       next(e);
+//     }
+//   },
 };
 
 module.exports = middlewares;
