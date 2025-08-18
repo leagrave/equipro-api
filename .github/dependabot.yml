@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # Dépendances Node.js (backend)
+  - package-ecosystem: "npm"
+    directory: "../package.json"  
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
