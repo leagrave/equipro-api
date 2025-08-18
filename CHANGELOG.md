@@ -20,11 +20,10 @@ All notable changes to this project will be documented in this file. See [standa
   - pg : 8.16.0 → 8.16.3
 ### Corrigé
 - Correctif sécurité Express
-### Vetions
+### Versions
 | 1.0.0 | 01/01/2025 | J. Dupont | Première version stable déployée | Initiale | - |
 | 1.1.0 | 15/02/2025 | A. Martin | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
 | 1.2.1 | 10/03/2025 | S. Leroy | Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
-
 | 1.0.0 | 01/01/2025 | J. Dupont | Première version stable déployée | Initiale | - |
 | 1.1.0 | 15/02/2025 | A. Martin | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
 | 1.2.1 | 10/03/2025 | S. Leroy | Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
