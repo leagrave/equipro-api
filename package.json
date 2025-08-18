@@ -1,6 +1,6 @@
 {
   "name": "equipro-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "API Node.js",
   "main": "app.js",
   "scripts": {
