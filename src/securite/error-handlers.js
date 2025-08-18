@@ -6,6 +6,7 @@ const logger = createLogger({
 });
 
 const notFoundHandler = (req, res, next) => {
+  console.warn(`Ressource non trouvée : ${req.originalUrl}`);
   res.status(404).json({ error: "Ressource introuvable" });
 };
 

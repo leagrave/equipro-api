@@ -27,7 +27,7 @@ router.post("/signup", async (req, res) => {
         // Mapper pour appel fonctions plus bas
 
         // Vérification des champs
-        if (!firstName || !lastName || !email || !password || !professional || !role) {
+        if (!firstName || !lastName || !email || !password || !role) {
             return res.status(400).json({ error: "Tous les champs sont requis" });
         }
 

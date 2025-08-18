@@ -25,6 +25,8 @@ const soinsRoute = require("./src/soins/router");
 const notesRoute = require("./src/notes/router");
 const ecuriesRoute = require("./src/ecurie/router");
 const interventionRoute = require("./src/intervention/router");
+const invoiceRoute = require("./src/invoice/router");
+
 
 const app = express();
 
@@ -38,7 +40,7 @@ Sentry.init({
   tracesSampleRate: 1.0, 
 });
 
-// -------- Security headers (Helmet + CSP) ----------
+// // -------- Security headers (Helmet + CSP) ----------
 app.disable("x-powered-by");
 app.use(helmet({
   contentSecurityPolicy: {
@@ -57,16 +59,19 @@ app.use(helmet({
 }));
 
 // // -------- CORS strict ----------
-const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000", undefined];
+
+const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:3000","http://localhost:3000/api", undefined];
 
 app.use(cors({
   origin: (origin, cb) => {
+    console.log('CORS origin:', origin); // Ajoute ce log pour debug
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error("CORS non autorisé"));
   },
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   credentials: true,
 }));
+
 
 // // -------- HTTPS redirect (prod) ----------
 app.use((req, res, next) => {
@@ -83,27 +88,25 @@ app.use(compression());
 // // -------- Logs HTTP (morgan) ----------
  app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// Appliquer limiter global à toutes les routes
-app.use(globalLimiter);
 
 // ======================
 // Routes API
 // ======================
-app.get("/", (req, res) => res.send("Hello world!"));
 app.use("/api", loginRoute, authLimiter);
+app.use(globalLimiter);
 app.use("/api", signUpRoute);
 app.use("/api", userRoute);
+app.use("/api", horseRoute);
 app.use("/api", uploadRoute);
 app.use("/api", agendaRoute);
 app.use("/api", customerRoute);
 app.use("/api", profesionalRoute);
-app.use("/api", horseRoute);
 app.use("/api", adressesRoute);
 app.use("/api", soinsRoute);
 app.use("/api", notesRoute);
 app.use("/api", ecuriesRoute);
 app.use("/api", interventionRoute);
-
+app.use("/api", invoiceRoute);
 
 
 // ======================
@@ -114,7 +117,7 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 });
 Sentry.setupExpressErrorHandler(app);
 
-// -------- 404 + erreurs centralisées ----------
+// // -------- 404 + erreurs centralisées ----------
 app.use(notFoundHandler);
 app.use(errorHandler);
 
@@ -122,7 +125,7 @@ app.use(errorHandler);
 // Lancement serveur
 // ======================
 const PORT = process.env.PORT || 3000;
-if (require.main === module) {
-  app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
-}
+
+app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
+
 

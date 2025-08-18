@@ -5,6 +5,7 @@ const middlewares = require('../securite/middlewares');
 
 //  POST /api/horse
 router.post('/horse',middlewares.authMiddleware, async (req, res) => {
+  console.log('BODY:', req.body);
   const { users, horse, address } = req.body;
 
 

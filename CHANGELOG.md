@@ -21,16 +21,9 @@ All notable changes to this project will be documented in this file. See [standa
 ### Corrigé
 - Correctif sécurité Express
 ### Versions
-| 1.0.0 | 01/01/2025 | J. Dupont | Première version stable déployée | Initiale | - |
-| 1.1.0 | 15/02/2025 | A. Martin | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
-| 1.2.1 | 10/03/2025 | S. Leroy | Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
-| 1.0.0 | 01/01/2025 | J. Dupont | Première version stable déployée | Initiale | - |
-| 1.1.0 | 15/02/2025 | A. Martin | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
-| 1.2.1 | 10/03/2025 | S. Leroy | Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
-| v1.0.2 | 2025-08-17 | CI/CD | Build réussi | build | - |
 
-| 1.0.0 | 01/01/2025 | J. Dupont | Première version stable déployée | Initiale | - |
-| 1.1.0 | 15/02/2025 | A. Martin | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
-| 1.2.1 | 10/03/2025 | S. Leroy | Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
+| 1.0.0 | 01/01/2025 | Léa GRAVE | Première version stable déployée | Initiale | - |
+| 1.1.0 | 15/02/2025 | Léa GRAVE | Ajout de la fonctionnalité d’export PDF | Nouvelle fonction | - |
+| 1.2.1 | 10/03/2025 | Léa GRAVE| Correction erreur 500 lors de l’ajout d’un client | Correctif | ANO-2025-001 |
 | v1.0.2 | 2025-08-17 | CI/CD | Build réussi | build | - |
 | v1.0.3 | 2025-08-18 | CI/CD | Build réussi | build | - |

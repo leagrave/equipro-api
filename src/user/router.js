@@ -4,7 +4,8 @@ const User = require('./service');
 const middlewares = require('../securite/middlewares');
 
 // GET /api/users - Crée  un utilisateur
-router.post('/userCreate',middlewares.authMiddleware, async (req, res) => {
+router.post('/userCreate', async (req, res) => {
+    console.log('BODY:');
   const { email, password, first_name, last_name, professional } = req.body;
 
   if (!email || !password) {
@@ -50,6 +51,18 @@ router.get('/user/pro/:id', middlewares.authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Erreur getUserById:', error);
     res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST -> créer une facture
+router.post("/facture/file", middlewares.authMiddleware, async (req, res) => {
+    console.log("Création d'une facture avec les données :", req.body);
+  try {
+    const invoice = await User.createInvoice(req.body);
+    res.status(201).json(invoice);
+  } catch (error) {
+    console.error("Erreur création facture :", error);
+    res.status(500).json({ error: "Impossible de créer la facture" });
   }
 });
 

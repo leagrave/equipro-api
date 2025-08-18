@@ -30,7 +30,8 @@ router.get('/customer/:user_id', async (req, res) => {
 });
 
 // Créer un client
-router.post('/customer',middlewares.authMiddleware, async (req, res) => {
+router.post('/customer',async (req, res) => {
+  console.log('BODY:', req.body);
   const { owner_id, user_id ,phone, phone2, is_societe, societe_name, notes, mainAddress, billingAddress } = req.body;
    //mainAddress & billingAddress = { adresse, city, postal_code, country, latitude, longitude, type};
 
