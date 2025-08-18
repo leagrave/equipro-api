@@ -38,5 +38,13 @@
     "description": "Build réussi",
     "type": "build",
     "anomalie": ""
+  },
+  {
+    "version": "v1.0.4",
+    "date": "2025-08-18",
+    "auteur": "CI/CD",
+    "description": "Build réussi",
+    "type": "build",
+    "anomalie": ""
   }
 ]
