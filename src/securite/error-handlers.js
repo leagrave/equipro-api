@@ -1,17 +1,15 @@
 const { createLogger, format, transports } = require("winston");
+
 const logger = createLogger({
   level: "info",
   format: format.combine(format.timestamp(), format.json()),
-  transports: [new transports.File({ filename: "error.log", level: "error" }), new transports.Console()],
+  transports: [
+    new transports.File({ filename: "error.log", level: "error" }),
+    new transports.Console(),
+  ],
 });
 
 const notFoundHandler = (req, res, next) => {
-  router.post('/userCreate', async (req, res) => {
-    console.log('>>> ROUTE /userCreate appelée');
-    console.log('BODY:', req.body);
-
-  });
-
   console.warn(`Ressource non trouvée : ${req.originalUrl}`);
   res.status(404).json({ error: "Ressource introuvable" });
 };
