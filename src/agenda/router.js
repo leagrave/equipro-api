@@ -5,6 +5,7 @@ const middlewares = require('../securite/middlewares');
 
 // Récupération de l’agenda d’un utilisateur
 router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {
+
     try {
         const agenda = await agendaService.getAgenda(req.params.userId);
         res.json(agenda);
@@ -15,7 +16,7 @@ router.get('/agenda/:userId',middlewares.authMiddleware, async (req, res) => {
 });
 
 // Récupération des infos d’un utilisateur
-router.get('/agendaAll/:userId',middlewares.authMiddleware, async (req, res) => {
+router.get('/agendaAll/:userId', async (req, res) => {
     console.log(req.params.userId)
     try {
     if (req.user.id !== req.params.userId) {

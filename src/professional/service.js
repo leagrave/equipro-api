@@ -16,12 +16,12 @@ const Professional = {
     return result.rows;
   },
 
-    async createAddress(address, city, postal_code, country = 'France', latitude = null, longitude = null) {
+  async createAddress(address, city, postal_code, country, latitude = null, longitude = null, type, user_id, horse_id) {
     const result = await pool.query(
-      `INSERT INTO addresses (address, city, postal_code, country, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO addresses (address, city, postal_code, country, latitude, longitude, type, user_id, horse_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
-      [address, city, postal_code, country, latitude, longitude]
+      [address, city, postal_code, country, latitude, longitude, type, user_id, horse_id]
     );
     return result.rows[0].id;
   },
@@ -29,16 +29,21 @@ const Professional = {
   async createProfessional(proData, addressData) {
     // addressData = { adresse, city, postal_code, country?, latitude?, longitude? }
     // proData = { phone, phone2, siret_number, societe_name, professional_types_id, is_verified }
+    let address_id = null;
+    if (addressData) {
+      address_id = await this.createAddress(
+        addressData.address,
+        addressData.city,
+        addressData.postal_code,
+        addressData.country || 'France',
+        addressData.latitude || null,
+        addressData.longitude || null,
+        addressData.type || 'main',
+        addressData.user_id || null,
+        addressData.horse_id || null,
+      );
+    }
 
-    // 1. Créer l'adresse et récupérer son id
-    const address_id = await this.createAddress(
-      addressData.address,
-      addressData.city,
-      addressData.postal_code,
-      addressData.country || 'France',
-      addressData.latitude || null,
-      addressData.longitude || null
-    );
 
     // 2. Créer le professionnel avec l'id d'adresse
     const result = await pool.query(

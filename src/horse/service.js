@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 const Horse = {
   // Créer une adresse
-  async createAddress(address, city, postal_code, country, latitude, longitude, type, user_id, horse_id) {
+  async createAddress(address, city, postal_code, country, latitude = null, longitude = null, type, user_id, horse_id) {
     const result = await pool.query(
       `INSERT INTO addresses (address, city, postal_code, country, latitude, longitude, type, user_id, horse_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -14,17 +14,23 @@ const Horse = {
 
   // Créer un cheval avec adresse et lien user (et tables de liaison)
   async createHorseWithAddressAndUser(horseData, addressData, users) {
-    const address_id = await this.createAddress(
-      addressData.address,
-      addressData.city,
-      addressData.postal_code,
-      addressData.country,
-      addressData.latitude,
-      addressData.longitude,
-      addressData.type,
-      addressData.user_id,
-      addressData.horse_id = null,
-    );
+    console.log("Début création cheval");
+    let address_id = null;
+
+    // 1. Créer adresse principale si elle existe
+    if (addressData) {
+      address_id = await this.createAddress(
+        addressData.address,
+        addressData.city,
+        addressData.postal_code,
+        addressData.country || 'France',
+        addressData.latitude || null,
+        addressData.longitude || null,
+        addressData.user_id || null,
+        addressData.horse_id || null,
+        addressData.type || 'main'
+      );
+    }
 
     // 1. Création du cheval de base (sans les liaisons n-n)
     const result = await pool.query(
@@ -45,10 +51,12 @@ const Horse = {
 
     const horse = result.rows[0];
 
-    await pool.query(
-      `UPDATE addresses SET horse_id = $1 WHERE id = $2`,
-      [horse.id, address_id]
-    );
+    if (address_id) {
+      await pool.query(
+        `UPDATE addresses SET horse_id = $1 WHERE id = $2`,
+        [horse.id, address_id]
+      );
+    }
 
     // 2. Insertion dans horse_users
     if (Array.isArray(users) && users.length > 0) {
@@ -61,8 +69,8 @@ const Horse = {
     }
     // 3. Insertion dans les tables de liaison (si données présentes)
 
-    // Breed(s)
-    if (horseData.breed_ids && Array.isArray(horseData.breed_ids)) {
+   // Breed(s)
+    if (Array.isArray(horseData.breed_ids) && horseData.breed_ids.length > 0) {
       for (const breed_id of horseData.breed_ids) {
         await pool.query(
           `INSERT INTO horse_breeds_link (horse_id, breed_id) VALUES ($1, $2)`,
@@ -72,7 +80,7 @@ const Horse = {
     }
 
     // Feed type(s)
-    if (horseData.feed_type_ids && Array.isArray(horseData.feed_type_ids)) {
+    if (Array.isArray(horseData.feed_type_ids) && horseData.feed_type_ids.length > 0) {
       for (const feed_type_id of horseData.feed_type_ids) {
         await pool.query(
           `INSERT INTO horse_feed_types (horse_id, feed_type_id) VALUES ($1, $2)`,
@@ -82,7 +90,7 @@ const Horse = {
     }
 
     // Color(s)
-    if (horseData.color_ids && Array.isArray(horseData.color_ids)) {
+    if (Array.isArray(horseData.color_ids) && horseData.color_ids.length > 0) {
       for (const color_id of horseData.color_ids) {
         await pool.query(
           `INSERT INTO horse_colors_link (horse_id, color_id) VALUES ($1, $2)`,
@@ -92,7 +100,7 @@ const Horse = {
     }
 
     // Activity type(s)
-    if (horseData.activity_type_ids && Array.isArray(horseData.activity_type_ids)) {
+    if (Array.isArray(horseData.activity_type_ids) && horseData.activity_type_ids.length > 0) {
       for (const activity_type_id of horseData.activity_type_ids) {
         await pool.query(
           `INSERT INTO horse_activity_types_link (horse_id, activity_type_id) VALUES ($1, $2)`,

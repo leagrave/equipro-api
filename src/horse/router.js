@@ -16,10 +16,12 @@ router.post('/horse',middlewares.authMiddleware, async (req, res) => {
   try {
     const createdHorse = await Horse.createHorseWithAddressAndUser(horse, address, users);
     res.status(201).json(createdHorse);
-  } catch (err) {
-    console.error('Erreur création cheval :', err);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
+} catch (err) {
+  console.log('Erreur création cheval :', err.message, err.stack);
+  console.error('Erreur création cheval :', err.message, err.stack);
+  res.status(500).json({ error: 'Erreur serveur', details: err.message });
+}
+
 });
 
 //  GET /api/horses/:id

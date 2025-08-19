@@ -1,8 +1,18 @@
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 require('dotenv').config();
+const express = require('express');
+const app = express();
+
+app.use((req, res, next) => {
+  console.log('Requête reçue:', req.method, req.url);
+  next();
+});
+
 
 const middlewares = {
+
+  
   decodeJwt: (token, secret = process.env.JWT_SECRET) => jwt.verify(token, secret),
 
   checkAuthZHeader: (header, authZType) => {

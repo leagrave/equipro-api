@@ -5,9 +5,12 @@ const middlewares = require('../securite/middlewares');
 
 // Créer une nouvelle adresse
 router.post('/adresse',middlewares.authMiddleware, async (req, res) => {
+    const { address, city, postal_code, country , latitude, longitude, user_id, horse_id, type } = req.body;
+
+
   try {
-    const address = await AddressService.createAddress(req.body);
-    res.status(201).json(address);
+    const addressPost = await AddressService.createAddress(address, city, postal_code, country , latitude, longitude, user_id, horse_id, type);
+    res.status(201).json(addressPost);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la création de l\'adresse' });
