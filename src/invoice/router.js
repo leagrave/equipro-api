@@ -31,6 +31,7 @@ router.get("/factures/pro/:professionalId",middlewares.authMiddleware,  async (r
 
 // GET -> factures d’un utilisateur
 router.get("/factures/user/:userId",middlewares.authMiddleware, async (req, res) => {
+  console.log(req.params.userId)
   try {
     const invoices = await invoiceService.getInvoicesByUser(
       req.params.userId

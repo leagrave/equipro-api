@@ -25,9 +25,8 @@
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
-    "express": "^5.1.0",
-    "express-mongo-sanitize": "^2.2.0",
-    "express-openid-connect": "^2.18.0",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
     "express-rate-limit": "^8.0.1",
     "firebase-admin": "^13.4.0",
     "helmet": "^8.1.0",
@@ -39,13 +38,12 @@
     "nodemailer": "^7.0.5",
     "pg": "^8.16.0",
     "uuid": "^11.1.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "eslint": "^9.33.0",
-    "jest": "^30.0.5",
     "nodemon": "^3.1.9",
-    "standard-version": "^9.5.0",
-    "supertest": "^7.1.4"
+    "standard-version": "^9.5.0"
   }
 }

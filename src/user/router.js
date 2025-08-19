@@ -54,17 +54,6 @@ router.get('/user/pro/:id', middlewares.authMiddleware, async (req, res) => {
   }
 });
 
-// POST -> créer une facture
-router.post("/facture/file", middlewares.authMiddleware, async (req, res) => {
-    console.log("Création d'une facture avec les données :", req.body);
-  try {
-    const invoice = await User.createInvoice(req.body);
-    res.status(201).json(invoice);
-  } catch (error) {
-    console.error("Erreur création facture :", error);
-    res.status(500).json({ error: "Impossible de créer la facture" });
-  }
-});
 
 // GET /api/users/:id - Récupérer un utilisateur par id
 router.get('/user/:id',middlewares.authMiddleware, async (req, res) => {

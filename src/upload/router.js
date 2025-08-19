@@ -51,12 +51,12 @@ router.get('/download/:key',middlewares.authMiddleware, async (req, res) => {
 
 
 
-router.get('/files/user/:userId',middlewares.authMiddleware, async (req, res) => {
+router.get('/files/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const files = await getFilesForUser(userId);
     res.json(files);
-    console.log("test fonctionne")
+    console.log("test fonctionne", files)
   } catch (err) {
     console.error('Erreur récupération fichiers utilisateur :', err);
     res.status(500).json({ error: 'Erreur serveur' });

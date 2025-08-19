@@ -291,10 +291,11 @@ CREATE TABLE invoices (
     professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL, 
     title TEXT,
     total_amount DECIMAL(10,2) NOT NULL,
+    number VARCHAR(40) NOT NULL,
 
-    issue_date TIMESTAMP DEFAULT NOW(),
+    issue_date TIMESTAMP DEFAULT NOW() NOT NULL,
 
-    due_date TIMESTAMP NOT NULL,
+    due_date TIMESTAMP,
     is_paid BOOLEAN DEFAULT FALSE,
     is_company BOOLEAN DEFAULT FALSE,
 

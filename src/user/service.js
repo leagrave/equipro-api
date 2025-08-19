@@ -22,48 +22,6 @@ const User = {
     return result.rows[0];
   },
 
-  async createInvoice(data) {
-    const {
-        user_id,
-        horse_id,
-        professional_id,
-        title,
-        total_amount,
-        issue_date,
-        due_date,
-        is_company,
-        is_paid,
-        payment_type_id,
-        billing_address_id,
-        status_id,
-    } = data;
-
-        const result = await pool.query(
-      `        INSERT INTO invoices (
-            user_id, horse_id, professional_id, title, total_amount,
-            issue_date, due_date, is_company, is_paid, payment_type_id, billing_address_id, status_id
-        )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-        RETURNING *;`,
-      [
-        user_id,
-        horse_id,
-        professional_id,
-        title,
-        total_amount,
-        issue_date,
-        due_date,
-        is_company,
-        is_paid,
-        payment_type_id,
-        billing_address_id,
-        status_id,
-    ]
-    );
-    console.log("createInvoice result:", result.rows[0]);
-    return result.rows[0];
-},
-
   // Fonction appelée après inscription côté PostgreSQL
   async syncUserWithFirebase(uid, email, password, displayName, photoURL) {
   

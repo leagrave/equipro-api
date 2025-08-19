@@ -1,8 +1,9 @@
 require("dotenv").config();
+const Sentry = require("@sentry/node");
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const Sentry = require("@sentry/node");
+
 
 // Import des routes
 const loginRoute = require("./src/login/router");
@@ -126,5 +127,3 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
-
-

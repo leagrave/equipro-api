@@ -16,7 +16,7 @@ const s3Client = new S3Client({
   },
 });
 
-// ✅ Upload vers S3 avec AWS SDK v3
+// Upload vers S3 avec AWS SDK v3
 async function uploadFileToS3(fileBuffer, fileName, mimeType) {
   const key = `${Date.now()}_${fileName}`;
 
@@ -33,7 +33,7 @@ async function uploadFileToS3(fileBuffer, fileName, mimeType) {
   return { key, s3Url };
 }
 
-// ✅ Enregistrement dans PostgreSQL avec association utilisateurs
+// Enregistrement dans PostgreSQL avec association utilisateurs
 async function saveFileMetaToDb(originalName, s3Url, mimeType, userIds = []) {
   const fileId = uuidv4();
 
@@ -54,7 +54,7 @@ async function saveFileMetaToDb(originalName, s3Url, mimeType, userIds = []) {
   return result.rows[0];
 }
 
-// ✅ Génération d’une URL signée à partir de la "key"
+// Génération d’une URL signée à partir de la "key"
 async function getSignedUrlFromKey(key, expiresIn = 3600) {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -64,7 +64,7 @@ async function getSignedUrlFromKey(key, expiresIn = 3600) {
   return await getSignedUrl(s3Client, command, { expiresIn });
 }
 
-// ✅ Récupérer les fichiers associés à un utilisateur
+// Récupérer les fichiers associés à un utilisateur
 async function getFilesForUser(userId) {
   const result = await pool.query(
     `SELECT f.*, 
