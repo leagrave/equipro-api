@@ -22,9 +22,6 @@ router.post('/adresse',middlewares.authMiddleware, async (req, res) => {
 router.post('/adresses',middlewares.authMiddleware, async (req, res) => {
   const { address, city, postal_code, country , latitude, longitude, user_id, horse_id, type } = req.body;
 
-  if (!address || !city || !postal_code || !user_id) {
-    return res.status(400).json({ error: 'L\'adresse principale est obligatoire (address, city, postal_code)' });
-  }
 
   try {
     const addresses = await AddressService.createAddress(address, city, postal_code, country , latitude, longitude, user_id, horse_id, type);
