@@ -24,7 +24,7 @@ const compression = require("compression");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
-const { errorHandler, notFoundHandler } = require("./src/securite/error-handlers");
+//const { errorHandler, notFoundHandler } = require("./src/securite/error-handlers");
 //const { authLimiter, globalLimiter } = require("./src/securite/rate-limiters");
 
 
@@ -121,8 +121,8 @@ app.get("/ping", (req, res) => {
 // Sentry.setupExpressErrorHandler(app);
 
 // // -------- 404 + erreurs centralisées ----------
-app.use(notFoundHandler);
-app.use(errorHandler);
+// app.use(notFoundHandler);
+// app.use(errorHandler);
 
 // ======================
 // Lancement serveur
