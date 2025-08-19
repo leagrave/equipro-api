@@ -3,7 +3,7 @@ const multer = require('multer');
 const middlewares = require('../securite/middlewares');
 const upload = multer({ storage: multer.memoryStorage() });
 
-const { uploadFileToS3, saveFileMetaToDb, getSignedUrlFromKey, getFilesForUser  } = require('./service');
+const { uploadFileToS3, saveFileMetaToDb, getSignedUrlFromKey, getFilesForUser, getFilesForUPro  } = require('./service');
 
 const router = express.Router();
 
@@ -49,6 +49,17 @@ router.get('/download/:key',middlewares.authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/files/pro/:proID', async (req, res) => {
+  try {
+    const { proID } = req.params;
+    const files = await getFilesForUPro(proID);
+    res.json(files);
+    console.log("test fonctionne", files)
+  } catch (err) {
+    console.error('Erreur récupération fichiers utilisateur :', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
 
 
 router.get('/files/user/:userId', async (req, res) => {
