@@ -63,13 +63,12 @@ app.use(helmet({
 
 // // -------- CORS strict ----------
 console.log("CORS origin:", process.env.FRONT_URL);
-const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:5000", "http://localhost:64631", "https://equipro.onrender.com"];
+const allowedOrigins = [process.env.FRONT_URL, "http://localhost:4200", "http://localhost:5000", "http://localhost:64631", "https://equipro.onrender.com","http://localhost:49837","http://127.0.0.1:49837"];
 
 app.use(cors({
   origin: (origin, cb) => {
-    console.log('CORS origin:', origin); 
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error("CORS non autorisé"));
+    console.log('CORS origin:', origin);
+    cb(null, true); // autorise tout
   },
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   credentials: true,
